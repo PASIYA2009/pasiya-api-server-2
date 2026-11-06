@@ -5,7 +5,7 @@
 import { HttpError, fetchT, param } from '../system/util.js';
 
 const chains = (env) => withFree({
-  gemini: [['gemini', env.MODEL_GEMINI || 'gemini-3.8-flash'], ['gemini', 'gemini-flash-latest'], ['gemini', 'gemini-2.5-flash'], ['gemini', 'gemini-flash-lite-latest'], ['workers-ai', env.MODEL_GEMINI_FALLBACK_CF || '@cf/meta/llama-3.3-70b-instruct-fp8-fast']],
+  gemini: [['gemini', env.MODEL_GEMINI || 'gemini-flash-latest'], ['gemini', 'gemini-2.5-flash'], ['gemini', 'gemini-flash-lite-latest'], ['workers-ai', env.MODEL_GEMINI_FALLBACK_CF || '@cf/meta/llama-3.3-70b-instruct-fp8-fast']],
   gpt: [
     ['openrouter', env.MODEL_GPT_OPENROUTER || 'openai/gpt-oss-20b:free'],
     ['groq', env.MODEL_GPT_GROQ || 'openai/gpt-oss-20b'],
@@ -48,7 +48,7 @@ const more = (env) => ({
 
 // Substitutes: used only when NONE of a model's own providers answered, so every endpoint still gives an answer (the reply says substituted:true).
 const generic = (env) => [
-  ['gemini', env.MODEL_SUB_GEMINI || 'gemini-3.8-flash'], ['gemini', 'gemini-flash-latest'], ['gemini', 'gemini-flash-lite-latest'],
+  ['gemini', env.MODEL_SUB_GEMINI || 'gemini-flash-latest'], ['gemini', 'gemini-flash-lite-latest'],
   ['groq', env.MODEL_SUB_GROQ || 'auto'], ['cerebras', env.MODEL_SUB_CEREBRAS || 'auto'],
   ['mistral', env.MODEL_SUB_MISTRAL || 'mistral-small-latest'], ['github', env.MODEL_SUB_GITHUB || 'openai/gpt-4.1-mini'],
   ['openrouter', env.MODEL_SUB_OPENROUTER || 'meta-llama/llama-3.3-70b-instruct:free'], ['workers-ai', env.MODEL_SUB_CF || '@cf/meta/llama-3.3-70b-instruct-fp8-fast'],
@@ -124,7 +124,7 @@ async function resolveModel(prov, model, env) {
 
 async function openaiStyle(url, key, model, messages, max, ms, extraHeaders = {}) {
   const r = await fetchT(url, {
-    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}`, ...extraHeaders },
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${String(key).trim()}`, ...extraHeaders },
     body: JSON.stringify({ model, messages, max_tokens: max, temperature: 0.7 })
   }, ms);
   const d = await r.json().catch(() => ({}));
@@ -167,13 +167,13 @@ async function run(prov, model, messages, max, env, ms) {
     const sys = messages.find((m) => m.role === 'system')?.content;
     const user = messages.filter((m) => m.role !== 'system').map((m) => m.content).join('\n');
     const r = await fetchT(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: user }] }], ...(sys ? { systemInstruction: { parts: [{ text: sys }] } } : {}), generationConfig: { maxOutputTokens: max } })
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': String(env.GEMINI_API_KEY).trim() },
+      body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: user }] }], ...(sys ? { systemInstruction: { parts: [{ text: sys }] } } : {}), generationConfig: { maxOutputTokens: Math.max(max, 1024) + 1024 } })
     }, ms);
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error?.message || `HTTP ${r.status}`);
     const t = d.candidates?.[0]?.content?.parts?.map((x) => x.text || '').join('');
-    if (!t) throw new Error('empty answer');
+    if (!t) throw new Error('empty answer' + (d.candidates?.[0]?.finishReason ? ' (' + d.candidates[0].finishReason + ')' : d.promptFeedback?.blockReason ? ' (blocked: ' + d.promptFeedback.blockReason + ')' : ''));
     return t;
   }
   if (prov === 'anthropic') { // official Claude API (paid): ANTHROPIC_API_KEY

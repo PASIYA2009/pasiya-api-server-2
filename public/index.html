@@ -429,8 +429,8 @@ function renderStatus(s) {
     [s.edge.colo || '–', [s.edge.network, s.edge.protocol].filter(Boolean).join(' · ')], [s.database.note, s.database.name],
     [fmtNum(s.endpoints), `${s.categories} categories`], [fmtNum(s.requests24h), `${fmtNum(s.errors24h)} errors`],
     [fmtNum(s.avgResponseMs) + ' ms', 'Last 24 hours'], [s.successRate + '%', 'API calls, last 24h'], [s.users == null ? '–' : fmtNum(s.users), 'Registered accounts'],
-    [s.server ? `${s.server.ramUsedMb} MB` : '–', s.server ? `of ${s.server.ramTotalMb} MB · ${s.server.ramPct}% used` : 'Server memory'],
-    [s.server ? `${s.server.cpuPct}%` : '–', s.server ? `${s.server.cpuCores} cores · load ${s.server.load1}` : 'Server CPU']
+    s.server && s.server.ramUsedMb != null ? [`${s.server.ramUsedMb} MB`, `of ${s.server.ramTotalMb} MB · ${s.server.ramPct}% used`] : ['Serverless', 'Memory auto-managed by Cloudflare'],
+    s.server && s.server.cpuPct != null ? [`${s.server.cpuPct}%`, `${s.server.cpuCores} cores · load ${s.server.load1}`] : ['Auto-scaled', 'Cloudflare edge · no fixed CPU']
   ] : CARDS.map(() => ['loading', '']);
   $('#statusGrid').innerHTML = CARDS.map((c, i) => `<div class="card"><div class="k">${c[0]}</div><span class="ic ${c[2]}"><svg viewBox="0 0 24 24">${IC[c[1]]}</svg></span><div class="v ${s ? '' : 'sk'}"${i > 10 ? ` id="ld${i}v"` : ''}>${esc(vals[i][0])}</div>${vals[i][2] || ''}<div class="s"${i > 10 ? ` id="ld${i}s"` : ''}>${esc(vals[i][1])}</div></div>`).join('');
   $('#livePulse').className = 'pulse' + (s && s.status !== 'Online' ? ' warn' : '');
@@ -443,7 +443,7 @@ async function loadLive() {
   loadBusy = true;
   try {
     const d = await (await fetch('/api/load?_=' + Date.now(), { cache: 'no-store' })).json(), v = d.server;
-    if (!v) return;
+    if (!v || v.ramUsedMb == null || v.cpuPct == null) return;
     const set = (id, t) => { const el = document.getElementById(id); if (el && el.textContent !== t) el.textContent = t; };
     set('ld11v', `${v.ramUsedMb} MB`); set('ld11s', `of ${v.ramTotalMb} MB · ${v.ramPct}% used`);
     set('ld12v', `${v.cpuPct}%`); set('ld12s', `${v.cpuCores} cores · load ${v.load1}`);

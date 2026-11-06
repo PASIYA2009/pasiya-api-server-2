@@ -68,7 +68,7 @@ export async function siteFeed(slug) {
   return cached('nf:' + slug, 300, async () => {
     const si = SI_SITES.has(slug);
     const tiers = [
-      ['rss', () => firstGood(ownFeeds(s[4], s[5]).slice(0, 8), 6000)],
+      ['rss', () => firstGood(ownFeeds(s[4], s[5]).slice(0, 3), 6000)],
       ['google-news', () => firstGood([GNX(s[5], si), GNX(s[5], !si)], 8000)],
       ['bing-news', () => pull(BING(s[5]), 8000)]
     ];
@@ -98,9 +98,11 @@ endpoints.unshift({
     const { limit, q } = lim(p), g = String(p.group || 'sl').toLowerCase();
     const slugs = SITES.filter((s) => g === 'all' || s[1] === g).map((s) => s[0]);
     if (!slugs.length) throw new HttpError(400, 'group must be sl, world, tech, techsl or all.');
-    const res = await Promise.allSettled(slugs.map(siteFeed));
+    // Cloudflare Workers: max 6 parallel + 50 subrequests per request (free plan) -> only a few sources per call
+    const res = await Promise.allSettled(slugs.slice(0, 8).map(siteFeed));
     let items = res.flatMap((r) => (r.status === 'fulfilled' ? r.value.items : []));
     const failed = res.map((r, i) => (r.status === 'rejected' ? slugs[i] : null)).filter(Boolean);
+    if (slugs.length > 8 && !p.all) failed.push('(only first 8 sources used per call, use /api/news/<site> for the rest)');
     if (!items.length) throw new HttpError(502, 'No news source answered.');
     if (q) items = items.filter((x) => (x.title + ' ' + (x.summary || '')).toLowerCase().includes(q));
     items.sort((a, b) => (b.publishedAt || '').localeCompare(a.publishedAt || ''));
