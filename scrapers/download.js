@@ -75,22 +75,69 @@ async function cobalt(env, url, type) {
   if (!r.ok || !d.url || !['tunnel', 'redirect'].includes(d.status)) throw new HttpError(502, 'Cobalt fallback failed: ' + (d.error?.code || 'HTTP ' + r.status));
   return d;
 }
+
+// ---- YouTube backups when YouTube refuses this server's IP (bot check) ----
+// 1) public Piped / Invidious mirrors (no key)  2) cobalt (COBALT_API_URL)  3) Apify downloader actor (APIFY_TOKEN, uses your Apify credits)
+const PIPED = ['https://pipedapi.kavin.rocks', 'https://pipedapi.adminforge.de', 'https://api.piped.private.coffee', 'https://pipedapi.leptons.xyz'];
+const INVIDIOUS = ['https://inv.nadeko.net', 'https://yewtu.be', 'https://invidious.nerdvpn.de'];
+const getJson = async (u) => { try { const r = await fetchT(u, { headers: { 'User-Agent': UA, Accept: 'application/json' } }, 9000); if (r.ok) return await r.json().catch(() => null); } catch { /* next */ } return null; };
+const fmt = (o) => ({ quality: o.quality, height: o.height || 0, mime: o.mime, bitrate: o.bitrate || 0, hasAudio: !!o.hasAudio, filesize: o.filesize || null, url: o.url });
+async function ytMirrors(id) {
+  for (const h of PIPED) {
+    const d = await getJson(`${h}/streams/${id}`);
+    if (!d || (!d.videoStreams?.length && !d.audioStreams?.length)) continue;
+    const vs = (d.videoStreams || []).filter((s) => s.url && /^video\/mp4/.test(s.mimeType || ''));
+    return {
+      title: d.title,
+      video: vs.filter((s) => !s.videoOnly).map((s) => fmt({ quality: s.quality, height: s.height, mime: 'video/mp4', bitrate: s.bitrate, hasAudio: true, url: s.url })),
+      videoOnly: vs.filter((s) => s.videoOnly).map((s) => fmt({ quality: s.quality, height: s.height, mime: 'video/mp4', bitrate: s.bitrate, hasAudio: false, url: s.url })),
+      audio: (d.audioStreams || []).filter((s) => s.url && /^audio\/mp4/.test(s.mimeType || '')).map((s) => fmt({ quality: s.quality || 'audio', mime: 'audio/mp4', bitrate: s.bitrate, hasAudio: true, url: s.url }))
+    };
+  }
+  for (const h of INVIDIOUS) {
+    const d = await getJson(`${h}/api/v1/videos/${id}?local=true`);
+    if (!d || (!d.formatStreams?.length && !d.adaptiveFormats?.length)) continue;
+    const ad = d.adaptiveFormats || [];
+    return {
+      title: d.title,
+      video: (d.formatStreams || []).filter((s) => s.url && /mp4/.test(s.container || s.type || '')).map((s) => fmt({ quality: s.qualityLabel || s.quality, height: parseInt(s.resolution || s.qualityLabel) || 0, mime: 'video/mp4', hasAudio: true, url: s.url })),
+      videoOnly: ad.filter((s) => s.url && /^video\/mp4/.test(s.type || '')).map((s) => fmt({ quality: s.qualityLabel, height: parseInt(s.resolution || s.qualityLabel) || 0, mime: 'video/mp4', bitrate: Number(s.bitrate) || 0, hasAudio: false, url: s.url })),
+      audio: ad.filter((s) => s.url && /^audio\/mp4/.test(s.type || '')).map((s) => fmt({ quality: 'audio', mime: 'audio/mp4', bitrate: Number(s.bitrate) || 0, hasAudio: true, url: s.url }))
+    };
+  }
+  return null;
+}
+async function ytApify(env, id, type) {
+  const { runActor } = await import('./apify.js');
+  const items = await runActor(env.YT_APIFY_ACTOR || 'mrdoe~youtube-video-downloader', { startUrls: [{ url: `https://www.youtube.com/watch?v=${id}` }], quality: type === 'audio' ? 'audio' : '720p', maxItems: 1, proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] } }, env, 300, 120);
+  const it = items.find((x) => x.downloadUrl && (!x.status || x.status === 'SUCCESS'));
+  if (!it) throw new HttpError(502, 'Apify downloader gave no file' + (items[0]?.error ? ': ' + items[0].error : '.'));
+  return { title: it.title, url: it.downloadUrl, ext: it.ext || (type === 'audio' ? 'mp3' : 'mp4'), filesize: it.fileSizeMb ? Math.round(it.fileSizeMb * 1048576) : null, height: parseInt(it.resolution) || 0 };
+}
+// One entry point for "the direct player failed": returns { title, url, ext, filesize } for ONE file (type video|audio).
+export async function ytFallback(env, id, type) {
+  const m = await ytMirrors(id);
+  if (m) {
+    const pick = type === 'audio' ? [...m.audio].sort((a, b) => b.bitrate - a.bitrate)[0] : [...m.video].sort((a, b) => b.height - a.height)[0];
+    if (pick) return { title: m.title, url: pick.url, ext: type === 'audio' ? 'm4a' : 'mp4', filesize: pick.filesize, height: pick.height, mirrors: m };
+  }
+  const errs = [];
+  if (env.COBALT_API_URL) { try { const c = await cobalt(env, `https://www.youtube.com/watch?v=${id}`, type); return { title: null, url: c.url, ext: type === 'audio' ? 'mp3' : 'mp4', filesize: null }; } catch (e) { errs.push(e.message); } }
+  if (env.APIFY_TOKEN) { try { return await ytApify(env, id, type); } catch (e) { errs.push(e.message); } }
+  throw new HttpError(503, 'YouTube blocked this server and no backup worked' + (errs.length ? ' (' + errs.join('; ') + ')' : '') + '. Set COBALT_API_URL or SCRAPER_URL, or add APIFY_TOKEN (Apify downloader backup).');
+}
 export async function youtube(p, env = {}) {
   const type = guard(p), id = ytId(p.url);
-  const viaCobalt = async (why) => {
-    if (!env.COBALT_API_URL) throw new HttpError(503, why);
-    const d = await cobalt(env, `https://www.youtube.com/watch?v=${id}`, type);
-    return out('youtube', null, type, type === 'audio' ? 'mp3' : 'mp4', d.url);
-  };
+  const fallback = async () => { const f = await ytFallback(env, id, type); const o = out('youtube', f.title, type, f.ext, f.url); o.download.filesize = f.filesize || null; return o; };
   let d;
-  try { d = await ytPlayer(id); } catch (e) { return viaCobalt('YouTube is not answering right now. Connect a downloader (SCRAPER_URL or COBALT_API_URL).'); }
+  try { d = await ytPlayer(id); } catch { return fallback(); }
   const st = d.playabilityStatus?.status;
   if (st === 'ERROR' || st === 'UNPLAYABLE') throw new HttpError(404, 'Video not found or not available.');
   const sd = d.streamingData || {}, title = d.videoDetails?.title;
   let pick;
   if (type === 'audio') pick = (sd.adaptiveFormats || []).filter((f) => f.url && /^audio\/mp4/.test(f.mimeType || '')).sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0))[0];
   else pick = (sd.formats || []).filter((f) => f.url && /^video\/mp4/.test(f.mimeType || '')).sort((a, b) => (b.height || 0) - (a.height || 0))[0];
-  if (!pick) return viaCobalt(st === 'LOGIN_REQUIRED' ? 'YouTube asked this server to sign in (bot check). Connect a downloader (SCRAPER_URL or COBALT_API_URL).' : 'YouTube gave no direct link for this video from this server. Connect a downloader (SCRAPER_URL or COBALT_API_URL).');
+  if (!pick) return fallback();
   const o = out('youtube', title, type, type === 'audio' ? 'm4a' : 'mp4', pick.url);
   o.download.filesize = Number(pick.contentLength) || null;
   return o;

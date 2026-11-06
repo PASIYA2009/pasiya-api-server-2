@@ -3,7 +3,7 @@
 // (Direct links come from the platforms' own public data; Vercel never streams the file.)
 import { HttpError, fetchT, cached, param } from '../system/util.js';
 import { UA, safeUrl } from './_web.js';
-import { guard, ytId, ytPlayer, tiktok, social } from './download.js';
+import { guard, ytId, ytPlayer, ytFallback, tiktok, social } from './download.js';
 import { twitter } from './more_dl.js';
 
 const TIP = 'WhatsApp recompresses every video sent as "Video" or posted as a Status, which is why it turns blurry. '
@@ -17,11 +17,24 @@ const pack = (platform, title, list, extra = {}) => {
 const host = (raw) => { try { return new URL(String(raw || '').trim()).hostname.replace(/^(www|m|mobile|web)\./, ''); } catch { throw new HttpError(400, 'url must be a full link (https://...).'); } };
 const on = (h, ...d) => d.some((x) => h === x || h.endsWith('.' + x));
 
-async function yt(p) {
-  const id = ytId(p.url), d = await ytPlayer(id), st = d.playabilityStatus?.status;
+// Backup path (YouTube blocked this server): public mirrors give every quality; cobalt / Apify give one file.
+async function ytBackup(p, env, id) {
+  const f = await ytFallback(env, id, 'video');
+  const m = f.mirrors, q = (x) => ({ ...x });
+  if (m) {
+    const r = pack('youtube', m.title, m.video.length ? m.video : m.videoOnly.map(q));
+    const top = [...m.videoOnly].sort((a, b) => b.height - a.height)[0], audio = [...m.audio].sort((a, b) => b.bitrate - a.bitrate)[0] || null;
+    return { ...r, ...(top && top.height > (r.best.height || 0) ? { highestVideoOnly: top, note: `${top.quality} exists but has no sound: merge highestVideoOnly + bestAudio with ffmpeg.` } : {}), bestAudio: audio, via: 'mirror' };
+  }
+  return pack('youtube', f.title, [{ quality: f.height ? f.height + 'p' : 'video', height: f.height || 0, mime: 'video/mp4', hasAudio: true, filesize: f.filesize, url: f.url }], { via: 'backup downloader' });
+}
+async function yt(p, env = {}) {
+  const id = ytId(p.url);
+  let d; try { d = await ytPlayer(id); } catch { return ytBackup(p, env, id); }
+  const st = d.playabilityStatus?.status;
   if (st === 'ERROR' || st === 'UNPLAYABLE') throw new HttpError(404, 'Video not found or not available.');
-  if (st === 'LOGIN_REQUIRED') throw new HttpError(503, 'YouTube asked this server to sign in (bot check). Connect the separate downloader service (SCRAPER_URL) for YouTube.');
   const sd = d.streamingData || {};
+  if (st === 'LOGIN_REQUIRED' || ![...(sd.formats || []), ...(sd.adaptiveFormats || [])].some((f) => f.url)) return ytBackup(p, env, id);
   const q = (f, hasAudio) => ({ quality: f.qualityLabel || (f.height ? f.height + 'p' : f.audioQuality || 'audio'), height: f.height || 0, width: f.width || null, fps: f.fps || null, mime: String(f.mimeType || '').split(';')[0], bitrate: f.bitrate || 0, filesize: Number(f.contentLength) || null, hasAudio, url: f.url });
   const full = (sd.formats || []).filter((f) => f.url && /^video\/mp4/.test(f.mimeType || '')).map((f) => q(f, true));
   const only = (sd.adaptiveFormats || []).filter((f) => f.url && /^video\/mp4/.test(f.mimeType || '')).map((f) => q(f, false));
@@ -62,10 +75,10 @@ async function fb(p, platform, label, hosts) {
   return pack(platform, title, list);
 }
 
-async function hdVideo(p) {
+async function hdVideo(p, env = {}) {
   guard(p);
   const h = host(p.url);
-  if (on(h, 'youtube.com', 'youtu.be')) return yt(p);
+  if (on(h, 'youtube.com', 'youtu.be')) return yt(p, env);
   if (on(h, 'tiktok.com')) return tt(p);
   if (on(h, 'twitter.com', 'x.com')) return tw(p);
   if (on(h, 'facebook.com', 'fb.watch')) return fb(p, 'facebook', 'Facebook', ['facebook.com', 'fb.watch']);

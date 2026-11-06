@@ -36,6 +36,12 @@ Tests: `node test/run.mjs` (offline, mocked sites, no install needed).
 - Downloads are best effort (sites change; YouTube may refuse Cloudflare Workers's datacenter IPs). For maximum reliability host the separate yt-dlp service (`pasiya-scraper-api`) and set `SCRAPER_URL` + `SCRAPER_SHARED_SECRET`: it then answers the download endpoints instead.
 - `maxDuration` is 30s in `vercel.json` (Hobby allows up to 60).
 
+## v4.3
+- **Redeploy no longer wipes your variables:** `wrangler.jsonc` now has `"keep_vars": true` and no placeholder values (a name listed in `vars` overrides the dashboard). Add keys in the dashboard as **Secret** type and they always survive.
+- **YouTube MP4 / MP3 / HD:** when YouTube blocks the Cloudflare IP, the API now tries public Piped / Invidious mirrors, then your `COBALT_API_URL`, then an Apify downloader actor (needs `APIFY_TOKEN`, override with `YT_APIFY_ACTOR`) before giving up.
+- **Apify:** with `APIFY_TOKEN` set, Instagram (profile / posts / reels / hashtag), TikTok profile / comments, Facebook posts and X use Apify FIRST (free sources are the backup). Apify wait time raised from 22 s to 55 s.
+- Test: `node test/fallback.mjs`.
+
 ## v4.2
 - **Social APIs work with no key:** YouTube search + comments, Reddit search, TikTok profile, Instagram profile / posts / reels, X profile tweets and Facebook page now use free public data first (Apify is only a backup when `APIFY_TOKEN` is set). TikTok search / hashtag / comments now use the free tikwm.com public API, and X search, Instagram hashtag and Facebook posts use Bing / DuckDuckGo (`site:` search, public indexed posts only). Instagram Comments was removed (no free source exists). YouTube and Reddit also fall back to public Piped / Invidious / PullPush mirrors when blocked. Instagram / X / TikTok sometimes refuse datacenter IPs; the admin *Run health check* shows which ones work on your Cloudflare Workers.
 - **Music:** the 5 built-in songs are removed. The default is now one song (`https://youtu.be/-LDyd-Cba0A`). **Admin Panel > Background music**: paste any YouTube link + *Add song*, or *Remove* a song. Saved in Firestore `settings/music`; public list at `GET /api/music`; visitors pick up changes within ~30 s.

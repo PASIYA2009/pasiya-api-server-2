@@ -13,10 +13,12 @@
       "/api/*"
     ]
   },
+  // IMPORTANT: keeps every variable you add in the Cloudflare dashboard (Settings > Variables and Secrets).
+  // Without this, each `wrangler deploy` / Git redeploy DELETES dashboard variables that are not listed in "vars" below.
+  "keep_vars": true,
+  // Only non-changing values live here. Everything else (ADMIN_EMAIL, FIREBASE_WEB_API_KEY, COBALT_API_URL, ...)
+  // is set in the dashboard and survives redeploys. A name listed here would OVERRIDE the dashboard value, so do not repeat dashboard names here.
   "vars": {
-    "FIREBASE_PROJECT_ID": "pasiya-api",
-    "FIREBASE_WEB_API_KEY": "AIzaSyCPZAmh7zUmU24aRtDvhGKXydh8DCDSaxk",
-    "ADMIN_EMAIL": "eshandinujaya86@gmail.com",
-    "PLATFORM_START": "2026-11-05T00:00:00Z"
+    "FIREBASE_PROJECT_ID": "pasiya-api"
   }
 }

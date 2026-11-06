@@ -10,11 +10,11 @@ const need = (v, name, max = 150) => { const x = String(v ?? '').trim(); if (!x 
 const handle = (v, name) => need(v, name, 100).replace(/^https?:\/\/[^/]+\//i, '').replace(/^@/, '').replace(/[/?#].*$/, '');
 const lim = (p, d = 10, max = 30) => clamp(p.limit, 1, max, d);
 
-async function runActor(actor, input, env, ttl = 600) {
+export async function runActor(actor, input, env, ttl = 600, waitSec = 55) {
   return cached('apify:' + actor + ':' + JSON.stringify(input), ttl, async () => {
-    const r = await fetchT(`https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?timeout=22&format=json&clean=true`, {
+    const r = await fetchT(`https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?timeout=${waitSec}&format=json&clean=true`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${env.APIFY_TOKEN}` }, body: JSON.stringify(input)
-    }, 27000);
+    }, (waitSec + 8) * 1000);
     const d = await r.json().catch(() => null);
     if (r.status === 401 || r.status === 403) throw new HttpError(503, 'Apify token is invalid or out of credits. Owner: check APIFY_TOKEN.');
     if (r.status === 402) throw new HttpError(503, 'Apify credits are used up for this month.');
@@ -251,6 +251,7 @@ const fbPosts = (p) => {
   return viaSearch([`site:facebook.com/${sl}`, `${sl} facebook page posts`], new RegExp('facebook\\.com/' + sl + '/(?:posts|videos|photos|reel)|permalink|story_fbid', 'i'), new RegExp('facebook\\.com/' + sl, 'i'), lim(p));
 };
 const FREE = { 'tiktok/search': tiktokSearch, 'tiktok/hashtag': tiktokHashtag, 'tiktok/comments': tiktokComments, 'twitter/search': xSearch, 'instagram/hashtag': igHashtag, 'facebook/posts': fbPosts,  'youtube/search': ytSearch, 'youtube/comments': ytComments, 'reddit/search': redditSearch, 'tiktok/profile': tiktokProfile, 'instagram/profile': igProfile, 'instagram/posts': igPosts(false), 'instagram/reels': igPosts(true), 'twitter/profile': xProfile, 'facebook/page': fbPage };
+const APIFY_FIRST = new Set(['instagram/profile', 'instagram/posts', 'instagram/reels', 'instagram/hashtag', 'tiktok/comments', 'tiktok/profile', 'facebook/posts', 'twitter/search', 'twitter/profile']);
 // [path, name, desc, actor, params, build(p) -> input, platform]
 const E = (path, name, desc, actor, params, build, platform) => {
   const free = FREE[path];
@@ -258,12 +259,19 @@ const E = (path, name, desc, actor, params, build, platform) => {
     path: '/api/social/' + path, category: 'Social', name, cost: free ? 1 : 3, isNew: true, desc: desc + (free ? '' : ' (via Apify)'), ...(free ? {} : { needsEnv: ['APIFY_TOKEN'], noProbe: true }), params,
     run: async (p, env) => {
       const input = build(p); // validates the input first (400 on bad input)
-      if (free) {
-        try { const items = await cached('free:' + path + ':' + JSON.stringify(p), 300, () => free(p, env)); if (items?.length) return { platform, count: items.length, items }; }
-        catch (e) { if (!env.APIFY_TOKEN || (e instanceof HttpError && e.status === 400)) throw e; }
-        if (!env.APIFY_TOKEN) throw new HttpError(404, 'Nothing found (private / empty / wrong name).');
+      const viaApify = async () => { const items = await runActor(actor, input, env); return { platform, count: items.length, items }; };
+      if (!free) return viaApify();
+      const viaFree = async () => {
+        const items = await cached('free:' + path + ':' + JSON.stringify(p), 300, () => free(p, env));
+        if (!items?.length) throw new HttpError(404, 'Nothing found (private / empty / wrong name).');
+        return { platform, count: items.length, items };
+      };
+      const bad = (e) => e instanceof HttpError && e.status === 400;
+      // Instagram / TikTok-comments etc. are blocked on server IPs, so when APIFY_TOKEN is set Apify is tried FIRST and the free source is the backup.
+      if (env.APIFY_TOKEN && APIFY_FIRST.has(path)) {
+        try { return await viaApify(); } catch (e) { if (bad(e)) throw e; try { return await viaFree(); } catch { throw e; } }
       }
-      const items = await runActor(actor, input, env); return { platform, count: items.length, items };
+      try { return await viaFree(); } catch (e) { if (!env.APIFY_TOKEN || bad(e)) throw e; return viaApify(); }
     }
   };
 };
@@ -277,7 +285,7 @@ export default [
   E('instagram/profile', 'Instagram Profile', 'Public profile info: bio, followers, posts count', 'apify~instagram-profile-scraper', [param('username', 'instagram', 'Instagram username')], (p) => ({ usernames: [handle(p.username, 'username')] }), 'instagram'),
   E('instagram/posts', 'Instagram Posts', 'Latest posts of a public Instagram user', 'apify~instagram-post-scraper', [param('username', 'natgeo', 'Instagram username'), L], (p) => ({ username: [handle(p.username, 'username')], resultsLimit: lim(p) }), 'instagram'),
   E('instagram/reels', 'Instagram Reels', 'Latest reels of a public Instagram user', 'apify~instagram-reel-scraper', [param('username', 'natgeo', 'Instagram username'), L], (p) => ({ username: [handle(p.username, 'username')], resultsLimit: lim(p) }), 'instagram'),
-  E('instagram/hashtag', 'Instagram Hashtag', 'Recent posts of an Instagram hashtag', 'apify~instagram-hashtag-scraper', [param('tag', 'srilanka', 'Hashtag (no #)'), L], (p) => ({ hashtags: [need(p.tag, 'tag', 60).replace(/^#/, '')], resultsLimit: lim(p) }), 'instagram'),
+  E('instagram/hashtag', 'Instagram Hashtag', 'Recent posts of an Instagram hashtag', 'apify~instagram-hashtag-scraper', [param('tag', 'srilanka', 'Hashtag (no #)'), L], (p) => ({ hashtags: [need(p.tag, 'tag', 60).replace(/^#/, '')], resultsType: 'posts', resultsLimit: lim(p) }), 'instagram'),
   E('twitter/search', 'X (Twitter) Search', 'Search public tweets by keyword', 'apidojo~tweet-scraper', [param('q', 'sri lanka cricket', 'Search text'), param('limit', '10', '1-30 tweets', false)], (p) => ({ searchTerms: [need(p.q, 'q')], maxItems: lim(p), sort: 'Latest' }), 'twitter'),
   E('twitter/profile', 'X (Twitter) Profile Tweets', 'Latest tweets of a public X account', 'apidojo~tweet-scraper', [param('username', 'elonmusk', 'X username'), param('limit', '10', '1-30 tweets', false)], (p) => ({ twitterHandles: [handle(p.username, 'username')], maxItems: lim(p), sort: 'Latest' }), 'twitter'),
   E('youtube/search', 'YouTube Search', 'Search YouTube videos (title, views, channel, likes)', 'streamers~youtube-scraper', [param('q', 'sinhala songs', 'Search text'), param('limit', '10', '1-30 videos', false)], (p) => ({ searchQueries: [need(p.q, 'q')], maxResults: lim(p), maxResultsShorts: 0, maxResultStreams: 0 }), 'youtube'),
