@@ -52,3 +52,14 @@
 .ps-foot-links a .bx{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;border:1px solid var(--s-line);background:var(--s-surface);color:var(--s-muted)}
 .ps-foot-links a:hover .bx{color:var(--a);border-color:var(--a)}
 .ps-copy{margin-top:26px;padding-top:16px;border-top:1px solid var(--s-line);text-align:center;font-size:12.5px}
+
+/* Shared PASIYA animated ambient background */
+body{position:relative;isolation:isolate}
+body:before{content:"";position:fixed;inset:-18%;z-index:-1;pointer-events:none;
+ background:radial-gradient(ellipse at 18% 22%,rgba(var(--a-rgb,59,156,245),.11),transparent 38%),
+ radial-gradient(ellipse at 82% 72%,rgba(163,113,247,.10),transparent 42%),
+ radial-gradient(ellipse at 55% 8%,rgba(20,199,138,.055),transparent 34%);
+ animation:pasiyaAmbient 19s ease-in-out infinite alternate;transform:translate3d(0,0,0)}
+@keyframes pasiyaAmbient{0%{transform:translate3d(-1.5%,0,0) scale(1)}50%{transform:translate3d(1.2%,-1%,0) scale(1.04)}100%{transform:translate3d(0,1.5%,0) scale(1.02)}}
+.ps-p-logo{font:900 30px/1 Arial,sans-serif!important;letter-spacing:-.08em}
+@media(prefers-reduced-motion:reduce){body:before{animation:none}}

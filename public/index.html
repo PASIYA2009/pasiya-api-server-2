@@ -15,7 +15,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth;scroll-padding-top:84px}
 body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.5 var(--sans);padding-bottom:env(safe-area-inset-bottom)}
-body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(60% 40% at 85% -5%,color-mix(in srgb,var(--primary) 10%,transparent),transparent),radial-gradient(50% 35% at 0% 30%,color-mix(in srgb,var(--violet) 10%,transparent),transparent)}
+body::before{content:"";position:fixed;inset:-12%;z-index:-1;pointer-events:none;background:radial-gradient(60% 40% at 85% -5%,color-mix(in srgb,var(--primary) 13%,transparent),transparent),radial-gradient(50% 35% at 0% 30%,color-mix(in srgb,var(--violet) 13%,transparent),transparent);background-size:120% 120%;animation:pasiyaAmbient 18s ease-in-out infinite alternate}@keyframes pasiyaAmbient{from{transform:translate3d(-1%,0,0);background-position:0 0}to{transform:translate3d(1%,1%,0);background-position:100% 100%}}.pasiya-no-motion body::before,.pasiya-no-motion::before{animation:none!important;transition:none!important}
 button,input{font:inherit;color:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}[hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
@@ -148,18 +148,8 @@ input:focus{border-color:var(--primary)}
 .pathrow{display:flex;align-items:center;gap:10px;margin-top:auto}.pathrow .method{padding:6px 9px;font-size:11px}.pathrow .code{flex:1;margin:0;background:transparent;padding:0;font-size:12px;color:var(--muted)}
 .pathrow button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center}.pathrow button:hover{border-color:var(--primary);color:var(--primary)}
 
-/* music player + switches + drawer */
+/* drawer */
 .menu-btn,.drawer-head{display:none}
-.drawer-back{position:fixed;inset:0;z-index:55;background:#02080d99;backdrop-filter:blur(2px)}
-.player{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;border:1px solid var(--line);background:var(--surface);border-radius:14px}
-.pl-art{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--primary);background:color-mix(in srgb,var(--primary) 12%,transparent);border:1px solid color-mix(in srgb,var(--primary) 25%,transparent)}
-.pl-art.on svg{animation:beat 1s ease-in-out infinite alternate}@keyframes beat{to{transform:scale(1.18)}}
-.pl-info{min-width:0;flex:1}.pl-info b{display:block;font-size:13px;color:var(--head);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pl-info small{color:var(--muted);font-size:11px}
-.pl-ctl{display:flex;gap:6px;width:100%;justify-content:space-between}
-.pl-ctl button{flex:1;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);display:grid;place-items:center;color:var(--text)}
-.pl-ctl button:hover{border-color:var(--primary);color:var(--primary)}.pl-ctl button.pl-main{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
-.pl-ctl svg{width:18px;height:18px;fill:currentColor;stroke:none}
-#ytWrap{position:fixed;left:-400px;top:0;width:200px;height:200px;overflow:hidden;opacity:.01;pointer-events:none}
 .columns.one{grid-template-columns:1fr}
 .switches{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 4px}
 .sw{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-weight:600}
@@ -189,11 +179,12 @@ input:focus{border-color:var(--primary)}
 @media(max-width:560px){.api-grid{grid-template-columns:1fr}.wheel-wrap{flex-direction:column;align-items:flex-start}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
-<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{document.documentElement.dataset.accent=localStorage.getItem("pasiya_accent")||"blue"}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script></head>
+<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{document.documentElement.dataset.accent=localStorage.getItem("pasiya_accent")||"blue"}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script><style>#pasiyaLiveTime{font-size:12px;white-space:nowrap;padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface2)}@media(max-width:650px){#pasiyaLiveTime{display:none}}</style>
+</head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#overview" aria-label="PASIYA API home"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--primary)"/><stop offset="1" style="stop-color:var(--violet)"/></linearGradient></defs><path d="M32 3l25 14.5v29L32 61 7 46.5v-29z" fill="#0b1220" stroke="url(#lg)" stroke-width="3"/><path d="M24 46V19h12a8.5 8.5 0 010 17H24" fill="none" stroke="url(#lg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>PASIYA API</b><small>by Pasidu Eshan</small></span></a>
-  <div class="top-actions">
+  <a class="brand" href="#overview" aria-label="PASIYA API home"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--primary)"/><stop offset="1" style="stop-color:var(--violet)"/></linearGradient></defs><path d="M32 3l25 14.5v29L32 61 7 46.5v-29z" fill="#0b1220" stroke="url(#lg)" stroke-width="3"/><text x="32" y="44" text-anchor="middle" font-size="39" font-weight="900" fill="url(#lg)" font-family="Arial">P</text></svg><span><b>PASIYA API</b><small>by Pasidu Eshan</small></span></a>
+  <div class="top-actions"><span id="pasiyaLiveTime" class="muted mono" aria-live="off"></span>
     <button class="btn ghost" data-go="apis">Documentation</button>
     <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark theme"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
     <a class="btn ghost" id="regTop" href="/register">Register</a>
@@ -216,16 +207,6 @@ input:focus{border-color:var(--primary)}
   <div class="nav-label">ACCOUNT</div>
   <button class="nav" data-go="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>My Profile &amp; Keys</button>
   <button class="nav" id="adminNav" data-go="admin" hidden><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Admin Panel</button>
-  <div class="nav-label">MUSIC</div>
-  <div class="player" id="player">
-    <div class="pl-art" id="plArt" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></div>
-    <div class="pl-info"><b id="plTitle">Music</b><small id="plSub">Loading…</small></div>
-    <div class="pl-ctl">
-      <button id="plPrev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.500 12z"/></svg></button>
-      <button id="plPlay" class="pl-main" aria-label="Play music"></button>
-      <button id="plNext" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l10.500-7z"/></svg></button>
-    </div>
-  </div>
   <div data-ps-sites></div>
   <div data-ps-dots></div>
   <div data-ps-out hidden></div>
@@ -249,14 +230,7 @@ input:focus{border-color:var(--primary)}
         <p class="muted">Claim free coins every day and use them on AI and other APIs.</p>
         <div class="claim-row"><button class="btn primary" id="claimBtn">Claim daily coins</button><span class="claim-info" id="claimMsg">Sign in to claim your reward.</span></div>
       </div>
-      <div class="panel" id="spinPanel" hidden>
-        <div class="eyebrow">LUCKY REWARD</div><h2>Daily Lucky Spin</h2>
-        <div class="wheel-wrap">
-          <div style="position:relative"><div class="pointer"></div><div class="wheel" id="wheel"></div></div>
-          <div><div class="coin-big" style="font-size:22px;margin-top:0">Spin &amp; win</div><p class="muted">One spin every 24 hours.</p><button class="btn primary" id="spinBtn">Spin the wheel</button><div class="claim-info" id="spinMsg" style="margin-top:8px">Sign in to spin.</div></div>
-        </div>
-        <div class="rewards" id="spinRewards"><span>+10</span><span>+25</span><span>+50</span><span>+100</span><span>+250</span></div>
-      </div>
+      
     </div>
   </section>
 
@@ -301,13 +275,9 @@ input:focus{border-color:var(--primary)}
     <div class="switches"><label class="sw"><input type="checkbox" id="swDaily"><span class="track"></span><span>Daily coin claim</span></label><label class="sw"><input type="checkbox" id="swSpin"><span class="track"></span><span>Daily lucky spin</span></label></div>
     <p class="muted" id="featMsg"></p>
     <hr class="sep">
-    <div class="panel-head"><h2>Background music</h2><span class="muted"><b id="musicCount">0</b> songs</span></div>
-    <p class="muted">Paste a YouTube song link and press <b>Add song</b>. Remove any song with its button. Changes reach every visitor within about 30 seconds.</p>
-    <div class="form-stack"><input id="musicUrl" type="url" placeholder="https://youtu.be/-LDyd-Cba0A" aria-label="YouTube song link" autocomplete="off"><button class="btn primary" id="musicAdd">Add song</button></div>
-    <p class="muted" id="musicMsg"></p>
-    <div class="rows" id="musicRows"></div>
-    <hr class="sep">
-    <div class="panel-head"><h2>API manager</h2><span class="muted"><b id="apiOn">0</b> on · <b id="apiOff">0</b> off</span></div>
+    <hr class="sep"><div class="eyebrow">SITE CUSTOMIZATION</div><h2>Website appearance</h2><p class="muted">Changes are saved in this browser and shared between PASIYA API and PASIYA OFC on this domain.</p>
+    <div class="form-stack"><label>Theme colour <select id="psAdminAccent"><option value="blue">Blue</option><option value="purple">Purple</option><option value="green">Green</option><option value="amber">Amber</option></select></label><label>Background animation <select id="psAdminMotion"><option value="on">Enabled</option><option value="off">Disabled</option></select></label><label>Logo image URL <input id="psAdminLogo" type="url" placeholder="https://example.com/logo.png"></label><button class="btn primary" id="psAdminSave" type="button">Save appearance</button><p class="muted" id="psAdminMsg"></p></div>
+<div class="panel-head"><h2>API manager</h2><span class="muted"><b id="apiOn">0</b> on · <b id="apiOff">0</b> off</span></div>
     <p class="muted">Press <b>Run health check</b> to test every API from this server. APIs that fail can be switched off in one click: they disappear from the catalog and answer 503. “Needs real input” means the example link was refused, so it is not proven broken.</p>
     <div class="btn-row"><button class="btn primary sm" id="hcRun">Run health check</button><button class="btn sm" id="hcOffFailed" disabled>Switch off failed</button><button class="btn sm" id="hcAllOn">Switch all on</button></div>
     <p class="muted" id="hcMsg"></p>
@@ -359,7 +329,6 @@ input:focus{border-color:var(--primary)}
     </div>
   </div>
 </div>
-<div id="ytWrap" aria-hidden="true"><div id="ytHost"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script type="module">
@@ -612,7 +581,7 @@ async function refreshAll() {
     $$('[data-rev]').forEach((b) => (b.onclick = async () => { if (!confirm('Revoke this key? Apps using it will stop working.')) return; try { await authed('/api/keys/revoke', { method: 'POST', body: JSON.stringify({ id: b.dataset.rev }) }); toast('Key revoked'); refreshAll(); } catch (e) { toast(e.message); } }));
     $('#usageList').innerHTML = (us.items || []).map((x) => rowHtml(x.endpoint, `−${x.coins} · ${new Date(x.createdAt).toLocaleString()}`)).join('') || '<div class="muted">No paid calls yet.</div>';
     $('#coinList').innerHTML = (ch.items || []).map((x) => rowHtml(x.reason, `${x.amount > 0 ? '+' : ''}${x.amount} → ${x.balance}`)).join('') || '<div class="muted">No coin changes yet.</div>';
-    if (me.role === 'admin') { loadFeatures(); loadAdminMusic(); try { const o = await authed('/api/admin/overview'); $('#adminOverview').textContent = `Registered users: ${o.users}. Give coins to any registered user by their email.`; if (document.activeElement !== $('#setDaily')) $('#setDaily').value = o.dailyCoins; if (document.activeElement !== $('#setSpin')) $('#setSpin').value = o.spinMax; } catch {} }
+    if (me.role === 'admin') { loadFeatures(); try { const o = await authed('/api/admin/overview'); $('#adminOverview').textContent = `Registered users: ${o.users}. Give coins to any registered user by their email.`; if (document.activeElement !== $('#setDaily')) $('#setDaily').value = o.dailyCoins; if (document.activeElement !== $('#setSpin')) $('#setSpin').value = o.spinMax; } catch {} }
   } catch (e) { toast(e.message); }
 }
 $('#newKey').onclick = async () => { try { const d = await authed('/api/keys', { method: 'POST', body: '{}' }); showKey(d.key); refreshAll(); } catch (e) { toast(e.message); } };
@@ -694,89 +663,18 @@ $('#hcRun').onclick = async () => {
   $('#hcMsg').textContent = `Done: ${n('ok')} working, ${n('fail')} failed, ${n('warn')} need a real link to prove, ${n('skip')} not tested.`; btn.disabled = false; renderApis();
 };
 
-// ---- admin: background music manager ----
-const MU = { tracks: [] };
-function renderMusic() {
-  $('#musicCount').textContent = MU.tracks.length;
-  $('#musicRows').innerHTML = MU.tracks.length ? MU.tracks.map((t, i) => `<div class="rowi"><span><b>${esc(t.title || 'YouTube song')}</b><br><a class="muted" href="https://youtu.be/${esc(t.id)}" target="_blank" rel="noopener">youtu.be/${esc(t.id)}</a></span><span class="btn-row"><button class="btn sm" data-mrm="${i}">Remove</button></span></div>`).join('') : '<div class="muted">No songs. Add a YouTube link above.</div>';
-}
-async function saveMusic(msg) {
-  try { const d = await authed('/api/admin/music', { method: 'POST', body: JSON.stringify({ tracks: MU.tracks }) }); MU.tracks = d.tracks; $('#musicMsg').textContent = msg || d.message; loadMusic(); }
-  catch (e) { $('#musicMsg').textContent = e.message; await loadAdminMusic(); }
-  renderMusic();
-}
-async function loadAdminMusic() { try { MU.tracks = (await (await fetch('/api/music', { cache: 'no-store' })).json()).tracks || []; } catch {} renderMusic(); }
-$('#musicAdd').onclick = async () => {
-  const url = $('#musicUrl').value.trim(); if (!url) { $('#musicMsg').textContent = 'Paste a YouTube link first.'; return; }
-  const m = url.match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([\w-]{11})/) || url.match(/^([\w-]{11})$/);
-  if (!m) { $('#musicMsg').textContent = 'That is not a YouTube link.'; return; }
-  if (MU.tracks.some((t) => t.id === m[1])) { $('#musicMsg').textContent = 'That song is already in the list.'; return; }
-  let title = ''; try { title = (await (await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://youtu.be/' + m[1]))).json()).title || ''; } catch {}
-  MU.tracks.push({ id: m[1], title }); $('#musicUrl').value = ''; renderMusic(); await saveMusic('Song added.');
-};
-$('#musicUrl').onkeydown = (e) => { if (e.key === 'Enter') $('#musicAdd').click(); };
-$('#musicRows').onclick = (e) => { const i = e.target.dataset?.mrm; if (i == null) return; MU.tracks.splice(Number(i), 1); renderMusic(); saveMusic('Song removed.'); };
-
-// ---- background music: playlist comes from the server (Admin Panel > Background music); play/pause + next/previous live in the menu ----
-let TRACKS = [{ id: '-LDyd-Cba0A', title: '' }];
-const PLAY_I = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>', PAUSE_I = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
-const M = { yt: null, i: 0, want: store.get('pasiya_music') !== 'off', playing: false, ready: false, blocked: false, fails: 0, titles: {}, loaded: false };
-const trackName = () => M.titles[TRACKS[M.i]?.id] || TRACKS[M.i]?.title || (M.ready ? 'Song ' + (M.i + 1) : 'Music');
-function plRender() {
-  $('#plTitle').textContent = trackName();
-  $('#plSub').textContent = !M.ready ? 'Loading…' : !TRACKS.length ? 'No songs added' : M.fails >= TRACKS.length ? 'Songs unavailable' : M.playing ? `Playing · ${M.i + 1} / ${TRACKS.length}` : M.want && M.blocked ? 'Tap anywhere to start' : `Paused · ${M.i + 1} / ${TRACKS.length}`;
-  $('#plPlay').innerHTML = M.playing ? PAUSE_I : PLAY_I; $('#plPlay').setAttribute('aria-label', M.playing ? 'Pause music' : 'Play music'); $('#plArt').classList.toggle('on', M.playing);
-}
-function plGo(i, play = true) { if (!TRACKS.length) return; M.i = (i + TRACKS.length) % TRACKS.length; store.set('pasiya_track', TRACKS[M.i].id); if (M.yt?.loadVideoById) { try { play ? M.yt.loadVideoById(TRACKS[M.i].id) : M.yt.cueVideoById(TRACKS[M.i].id); } catch {} } plRender(); }
-const plWant = (on) => { M.want = on; store.set('pasiya_music', on ? 'on' : 'off'); };
-$('#plPlay').onclick = () => { if (!M.ready || !TRACKS.length) return; if (M.playing) { plWant(false); try { M.yt.pauseVideo(); } catch {} } else { plWant(true); try { M.yt.playVideo(); } catch {} } };
-$('#plNext').onclick = () => { plWant(true); plGo(M.i + 1); };
-$('#plPrev').onclick = () => { plWant(true); plGo(M.i - 1); };
-const kick = () => { if (M.ready && M.want && !M.playing && TRACKS.length) { try { M.yt.playVideo(); } catch {} } };
-['pointerdown', 'keydown', 'touchstart'].forEach((ev) => addEventListener(ev, kick, { passive: true }));
-// Apply a new playlist from the server. Keeps the current song playing if it is still in the list.
-function applyTracks(list) {
-  const cur = TRACKS[M.i]?.id, same = JSON.stringify(list.map((t) => t.id)) === JSON.stringify(TRACKS.map((t) => t.id));
-  TRACKS = list; list.forEach((t) => { if (t.title) M.titles[t.id] ||= t.title; });
-  if (same) { plRender(); return; }
-  const keep = list.findIndex((t) => t.id === cur);
-  if (keep >= 0) { M.i = keep; plRender(); return; }
-  const saved = list.findIndex((t) => t.id === store.get('pasiya_track'));
-  M.i = M.loaded ? 0 : Math.max(saved, 0); M.fails = 0;
-  if (!list.length) { try { M.yt?.stopVideo(); } catch {} M.playing = false; plRender(); return; }
-  if (M.yt?.loadVideoById) { try { M.want && M.loaded ? M.yt.loadVideoById(list[M.i].id) : M.yt.cueVideoById(list[M.i].id); } catch {} }
-  plRender();
-}
-async function loadMusic() {
-  try { const d = await (await fetch('/api/music', { cache: 'no-store' })).json(); if (Array.isArray(d.tracks)) applyTracks(d.tracks); } catch { /* keep the current list */ }
-  M.loaded = true; if (M.pendingInit) { M.pendingInit(); M.pendingInit = null; }
-}
-function initPlayer() {
-  M.yt = new YT.Player('ytHost', { width: 200, height: 200, videoId: TRACKS[M.i]?.id, playerVars: { autoplay: M.want ? 1 : 0, controls: 0, playsinline: 1, rel: 0, disablekb: 1, fs: 0, origin: location.origin }, events: {
-    onReady: () => { M.ready = true; if (M.want && TRACKS.length) { try { M.yt.playVideo(); } catch {} setTimeout(() => { if (!M.playing && M.want) { M.blocked = true; plRender(); } }, 2000); } plRender(); },
-    onAutoplayBlocked: () => { M.blocked = true; plRender(); },
-    onStateChange: (e) => {
-      if (e.data === 1) { M.playing = true; M.blocked = false; M.fails = 0; const t = M.yt.getVideoData?.().title; if (t && TRACKS[M.i]) M.titles[TRACKS[M.i].id] = t; }
-      else if (e.data === 2 || e.data === 5) M.playing = false;
-      else if (e.data === 0) { M.playing = false; plGo(M.i + 1); }
-      plRender();
-    },
-    onError: () => { M.playing = false; if (++M.fails < TRACKS.length) plGo(M.i + 1); else plRender(); }
-  } });
-}
-// The player is created only after BOTH the YouTube API and the playlist have arrived.
-window.onYouTubeIframeAPIReady = () => { M.apiReady = true; M.loaded ? initPlayer() : (M.pendingInit = initPlayer); };
-loadMusic();
-setInterval(() => { if (!document.hidden) loadMusic(); }, 30000);
-plRender();
-addEventListener('load', () => { const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.async = true; s.onerror = () => { $('#plSub').textContent = 'Music unavailable'; }; document.head.append(s); });
-
 $('#year').textContent = new Date().getFullYear();
 renderStatus(null); renderUser(); loadCatalog(); loadStatus(); initAuth();
 setInterval(loadStatus, 30000);
 setInterval(loadLive, 2000);
 setInterval(() => { if (!document.hidden) loadCatalog(); }, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadStatus(); loadCatalog(); } });
+</script>
+<script>
+(function(){var e=document.getElementById('pasiyaLiveTime');function tick(){if(e)e.textContent=new Intl.DateTimeFormat('en-LK',{timeZone:'Asia/Colombo',weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(new Date());}tick();setInterval(tick,1000);})();
+</script>
+<script>
+(function(){const $=s=>document.querySelector(s),get=k=>{try{return localStorage.getItem(k)||''}catch{return''}},set=(k,v)=>{try{localStorage.setItem(k,v)}catch{}};const a=$('#psAdminAccent'),m=$('#psAdminMotion'),l=$('#psAdminLogo'),b=$('#psAdminSave');if(!b)return;function load(){if(a)a.value=get('pasiya_accent')||'blue';if(m)m.value=get('pasiya_motion')||'on';if(l)l.value=get('pasiya_logo');}b.addEventListener('click',()=>{set('pasiya_accent',a.value);if(window.PS&&window.PS.setAccent)window.PS.setAccent(a.value);set('pasiya_motion',m.value);set('pasiya_logo',l.value.trim());document.documentElement.dataset.accent=a.value;document.body.classList.toggle('pasiya-no-motion',m.value==='off');document.documentElement.classList.toggle('pasiya-no-motion',m.value==='off');document.querySelectorAll('.ps-p-logo').forEach(e=>e.innerHTML=l.value.trim()?'<img src="'+l.value.replace(/["<>]/g,'')+'" alt="P" style="width:100%;height:100%;object-fit:contain">':'P');$('#psAdminMsg').textContent='Appearance saved in this browser.';});load();})();
 </script>
 </body>
 </html>
