@@ -1,7 +1,7 @@
 // Dashboard account endpoints: profile, API keys, daily claim, lucky spin, usage, admin tools.
 import { HttpError, stamp, sha256, randomHex, ytId } from './util.js';
 import * as fs from './db.js';
-import { session, forgetKeys, isAdminEmail } from './gateway.js';
+import { session, identity, forgetKeys, isAdminEmail } from './gateway.js';
 import { getFlags, resetFlags } from './flags.js';
 import { ENDPOINTS, listCatalog } from './registry.js';
 
@@ -50,6 +50,11 @@ export async function account(req, env, p, m) {
       .catch((e) => { throw e.status === 409 ? new HttpError(409, 'That username is taken. Choose another.') : e; });
     await fs.commit(env, [{ merge: ['users', c.u.uid, { username: name, usernameLower: key }] }]);
     return { username: name, message: 'Username saved.' };
+  }
+  // Login hand-off between the two sites (different origins = different browser storage). Needs a valid login; the token lives 5 minutes.
+  if (p === '/api/auth/handoff' && m === 'POST') {
+    const u = await identity(req, env);
+    return { success: true, customToken: await fs.customToken(env, u.uid) };
   }
   if (p === '/api/auth/available' && m === 'GET') {
     const name = String(new URL(req.url).searchParams.get('username') || '').trim().toLowerCase();

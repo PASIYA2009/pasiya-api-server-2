@@ -38,6 +38,20 @@ async function mintToken(env) {
   return tok.value;
 }
 
+// Firebase custom token (RS256, signed with the service account key). Used to carry a login to another origin (OFC site <-> workers.dev). Valid 5 minutes.
+export async function customToken(env, uid) {
+  if (!env.FIREBASE_SERVICE_ACCOUNT_JSON) throw new HttpError(503, 'FIREBASE_SERVICE_ACCOUNT_JSON secret is missing.');
+  const sa = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_JSON), now = Math.floor(Date.now() / 1000);
+  if (tok.keySrc !== sa.private_key) {
+    const pem = sa.private_key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g, '');
+    tok.cryptoKey = await crypto.subtle.importKey('pkcs8', Uint8Array.from(atob(pem), (c) => c.charCodeAt(0)), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+    tok.keySrc = sa.private_key;
+  }
+  const head = b64u(enc.encode(JSON.stringify({ alg: 'RS256', typ: 'JWT' })));
+  const claim = b64u(enc.encode(JSON.stringify({ iss: sa.client_email, sub: sa.client_email, aud: 'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit', iat: now, exp: now + 300, uid })));
+  return head + '.' + claim + '.' + b64u(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', tok.cryptoKey, enc.encode(head + '.' + claim)));
+}
+
 async function token(env) {
   if (tok.value && tok.exp > Date.now()) return tok.value;
   if (!tok.pending) tok.pending = mintToken(env).finally(() => { tok.pending = null; });

@@ -26,5 +26,7 @@ export const api = async (path, opts = {}, user) => {
 export async function social(ctx) {
   try { msg('Opening Google…', ''); await ctx.A.signInWithPopup(ctx.auth, new ctx.A.GoogleAuthProvider()); done(); } catch (e) { msg(friendly(e)); }
 }
-export const done = () => { msg('Welcome! Opening your dashboard…', 'good'); setTimeout(() => (location.href = '/'), 600); };
+// ?next=/some/path (set by the OFC site) sends the user back where they came from after login. Only same-site paths are accepted.
+export const nextUrl = () => { const n = new URLSearchParams(location.search).get('next') || ''; return /^\/(?!\/|\\)/.test(n) ? n + (n.includes('?') ? '&' : '?') + 'ps_ok=1' : '/'; };
+export const done = () => { msg('Welcome! Opening your dashboard…', 'good'); setTimeout(() => (location.href = nextUrl()), 600); };
 export function loadConfig(cb) { fetch('/api/config').then((r) => r.json()).then(cb).catch(() => {}); }

@@ -12,7 +12,7 @@ async function route(req, env) {
   if (m === 'OPTIONS') return new Response(null, { headers: CORS });
 
   if (p === '/api/health' || p === '/api/ping') return json({ ok: true, service: SITE, creator: CREATOR, time: stamp() });
-  if (p === '/api/config') return json({ success: true, signupCoins: Number(env.SIGNUP_COINS ?? 100), adminConfigured: !!String(env.ADMIN_EMAIL || '').trim(), turnstileSiteKey: env.TURNSTILE_SITE_KEY || null }, 200, { 'Cache-Control': 'public, max-age=60' });
+  if (p === '/api/config') return json({ success: true, signupCoins: Number(env.SIGNUP_COINS ?? 100), adminConfigured: !!String(env.ADMIN_EMAIL || '').trim(), turnstileSiteKey: env.TURNSTILE_SITE_KEY || null, ofcOrigin: String(env.OFC_ORIGIN || '').trim().replace(/\/+$/, '') || null }, 200, { 'Cache-Control': 'public, max-age=60' });
   if (p === '/api/status') return json({ success: true, ...(await status(req, env)) }, 200, { 'Cache-Control': 'no-store' });
   if (p === '/api/load') return json({ success: true, server: await serverLoad(), time: stamp() }, 200, { 'Cache-Control': 'no-store' });
   if (p === '/api/endpoint-status') return json({ success: true, endpoints: endpointHealth() }, 200, { 'Cache-Control': 'no-store' });

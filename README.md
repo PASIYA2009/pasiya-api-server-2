@@ -86,3 +86,8 @@ Tests: `node test/run.mjs` (offline, mocked sites, no install needed).
 - **Endpoints:** `scrapers/newsfeeds.js` (36 news sites + all-in-one), `search.js`, `utility.js`, `extras.js` (F-Droid APK, Internet Archive music, TikTok public avatar, Wikimedia live wallpapers, Web2Zip).
 - **Status:** the dashboard now has a **USERS** card (registered accounts, cached 60 s).
 - Not built on purpose: WhatsApp channel reacts (spam / engagement faking), WhatsApp DP saver (privacy), pirated APK / MP3 sites.
+
+## One login with the OFC site (Vercel)
+- `public/shell.js` + `shell.css` + `palette.css` give the same menu, footer and 4-colour theme as the OFC site.
+- Set `OFC_ORIGIN` (Cloudflare > Settings > Variables) to the OFC site address so a user who opened this worker directly is carried to the OFC site already logged in (`POST /api/auth/handoff`).
+- `/login?next=/path` returns to a same-site path after login.

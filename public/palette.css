@@ -1,0 +1,7 @@
+/* PASIYA shared palette (API site + OFC site). The accent is picked from the menu and saved in localStorage "pasiya_accent". */
+:root{--a:#3b9cf5;--b:#6a5be6;--a-rgb:59,156,245;--b-rgb:106,91,230;--on-a:#fff}
+:root[data-accent=purple]{--a:#a371f7;--b:#e056c8;--a-rgb:163,113,247;--b-rgb:224,86,200;--on-a:#fff}
+:root[data-accent=green]{--a:#14c78a;--b:#2dd4d4;--a-rgb:20,199,138;--b-rgb:45,212,212;--on-a:#04140e}
+:root[data-accent=amber]{--a:#f5a524;--b:#f97316;--a-rgb:245,165,36;--b-rgb:249,115,22;--on-a:#1a0d00}
+:root{--primary:var(--a);--violet:var(--b);--on-primary:var(--on-a)}
+:root[data-theme=light]{--primary:color-mix(in srgb,var(--a) 78%,#000);--violet:color-mix(in srgb,var(--b) 80%,#000);--on-primary:#fff}
