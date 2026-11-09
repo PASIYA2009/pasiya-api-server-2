@@ -31,12 +31,7 @@
 
   // ---------- theme accent ----------
   var ACCENTS = [['blue', '#3b9cf5', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber']];
-  function setAccent(a) {
-    H.dataset.accent = a; LS.set('pasiya_accent', a);
-    try { var u = new URL(location.href); u.searchParams.set('pasiya_accent', a); history.replaceState(null, '', u.pathname + u.search + u.hash); } catch (e) {}
-    $$('.ps-dot').forEach(function (b) { b.classList.toggle('on', b.dataset.a === a); });
-    renderSites(); renderFooter();
-  }
+  function setAccent(a) { H.dataset.accent = a; LS.set('pasiya_accent', a); $$('.ps-dot').forEach(function (b) { b.classList.toggle('on', b.dataset.a === a); }); }
   function renderDots() {
     var cur = H.dataset.accent || 'blue';
     $$('[data-ps-dots]').forEach(function (el) {
@@ -56,9 +51,7 @@
   }
   var NAV = [['home', 'Portfolio', '/'], ['bolt', 'API Dashboard', '/api'], ['book', 'Past Papers', '/pastpapers'], ['bot', 'WhatsApp Bot', '/bot'], ['qr', 'QR Editor', '/qr', 'NEW'], ['ai', 'PASIYA AI', '/ai', 'NEW']];
   function navHtml(list, cls) {
-    return list.map(function (n) { var l = link(n[2]); if (!l) return '';
-      try { var u = new URL(l.href, location.href); u.searchParams.set('pasiya_accent', H.dataset.accent || 'blue'); l.href = (/^https?:/.test(l.href) ? u.href : (u.pathname + u.search + u.hash)); } catch (e) {}
-      return '<a href="' + esc(l.href) + '"' + (l.x ? ' data-ps-x="1"' : '') + (cls ? ' class="' + cls + '"' : '') + '>' + ico(n[0]) + '<span>' + esc(n[1]) + '</span>' + (n[3] ? '<em class="ps-tag">' + n[3] + '</em>' : '') + '</a>'; }).join('');
+    return list.map(function (n) { var l = link(n[2]); if (!l) return ''; return '<a href="' + esc(l.href) + '"' + (l.x ? ' data-ps-x="1"' : '') + (cls ? ' class="' + cls + '"' : '') + '>' + ico(n[0]) + '<span>' + esc(n[1]) + '</span>' + (n[3] ? '<em class="ps-tag">' + n[3] + '</em>' : '') + '</a>'; }).join('');
   }
   function accountLinks() { // account pages live in the API dashboard
     var base = isDirect() ? '' : '/api';
@@ -67,10 +60,8 @@
   }
   function renderSites() {
     $$('[data-ps-sites]').forEach(function (el) {
-      var isAdmin = !!(P.me && P.me.role === 'admin');
-      var adminHref = ROLE === 'ofc' ? '/#admin-settings' : '/api#admin'; var adminLink = isAdmin ? '<div class="ps-sec">ADMIN</div><nav class="ps-links"><a href="' + adminHref + '">' + ico('term') + '<span>Admin Panel</span></a></nav>' : '';
       var acc = (P.user && ROLE !== 'api') ? '<div class="ps-sec">ACCOUNT</div><nav class="ps-links">' + accountLinks().map(function (n) { return '<a href="' + n[2] + '">' + ico(n[0]) + '<span>' + n[1] + '</span></a>'; }).join('') + '</nav>' : '';
-      el.innerHTML = '<div class="ps-sec">PASIYA SITES</div><nav class="ps-links">' + navHtml(NAV) + '</nav>' + acc + adminLink + '<div class="ps-sec">SUPPORT</div><nav class="ps-links"><a href="' + WA + '" target="_blank" rel="noopener">' + ico('head') + '<span>Contact Us</span><em class="ps-tag live">LIVE</em></a></nav>';
+      el.innerHTML = '<div class="ps-sec">PASIYA SITES</div><nav class="ps-links">' + navHtml(NAV) + '</nav>' + acc + '<div class="ps-sec">SUPPORT</div><nav class="ps-links"><a href="' + WA + '" target="_blank" rel="noopener">' + ico('head') + '<span>Contact Us</span><em class="ps-tag live">LIVE</em></a></nav>';
     });
   }
 
@@ -139,12 +130,11 @@
     var sup = [['head', 'Contact Us', WA], ['coin', 'Coin Wallet', accountLinks()[0][2]], ['gift', 'Daily Rewards', accountLinks()[1][2]], ['chat', 'Feedback', WA]];
     var foot = function (list) { return list.map(function (n) { var ext = /^https?:/.test(n[2]); var l = ext ? { href: n[2] } : link(n[2]) || { href: n[2] }; return '<a href="' + esc(l.href) + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + (l.x ? ' data-ps-x="1"' : '') + '><span class="bx">' + ico(n[0]) + '</span>' + esc(n[1]) + '</a>'; }).join(''); };
     el.className = 'ps-footer';
-    var showP = !/^\/pastpapers(?:\/|$)/i.test(location.pathname);
-    el.innerHTML = '<div class="brand">' + (showP ? '<span class="logo ps-p-logo">P</span>' : '') + '<div><b>' + (ROLE === 'api' ? 'PASIYA <em>API</em>' : 'PASIYA <em>OFC</em>') + '</b><span class="ps-up" id="psUp"><i></i>checking…</span></div></div>' +
+    el.innerHTML = '<div class="brand"><span class="logo">' + ico('bolt') + '</span><div><b>PASIYA <em>OFC</em></b><span class="ps-up" id="psUp"><i></i>checking…</span></div></div>' +
       '<p>Pasidu Eshan\'s home for the free PASIYA API, past papers, WhatsApp bot, QR editor and AI tools. One login works everywhere.</p>' +
       '<div class="ps-info"><a href="' + WA + '" target="_blank" rel="noopener"><span class="bx">' + ico('chat') + '</span>WhatsApp support</a><div><span class="bx">' + ico('globe') + '</span>' + esc(host) + '</div><div><span class="bx">' + ico('pin') + '</span>Sri Lanka 🇱🇰</div><div><span class="bx">' + ico('clock') + '</span>24/7 Global Support</div></div>' +
       '<div class="ps-social">' + soc + '</div>' +
-      '<div class="ps-cols"><div><h4><span>' + ico('head') + '</span>SUPPORT</h4><nav class="ps-foot-links">' + foot(sup) + '</nav></div></div>' +
+      '<div class="ps-cols"><div><h4><span>' + ico('term') + '</span>PLATFORM</h4><nav class="ps-foot-links">' + foot(plat) + '</nav></div><div><h4><span>' + ico('head') + '</span>SUPPORT</h4><nav class="ps-foot-links">' + foot(sup) + '</nav></div></div>' +
       '<div class="ps-copy">© ' + new Date().getFullYear() + ' · Designed &amp; built by <b>Pasidu Eshan</b></div>';
     fetch('/api/health', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { setUp(d && d.ok); }).catch(function () { setUp(false); });
     function setUp(ok) { var u = $('#psUp'); if (!u) return; u.className = 'ps-up' + (ok ? '' : ' warn'); u.innerHTML = '<i></i>' + (ok ? 'All systems online ✓' : 'Status unavailable'); }
@@ -152,8 +142,7 @@
 
   function renderAll() { renderDots(); renderSites(); renderAccount(); }
   function start() {
-    var incoming = ''; try { incoming = new URLSearchParams(location.search).get('pasiya_accent') || ''; } catch (e) {}
-    var a = incoming || LS.get('pasiya_accent') || 'blue'; H.dataset.accent = a; LS.set('pasiya_accent', a);
+    var a = LS.get('pasiya_accent') || 'blue'; H.dataset.accent = a;
     fetch('/api/config').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (c) { P.cfg = c || {}; renderAll(); renderFooter(); });
     renderAll(); bootAuth();
   }
