@@ -111,13 +111,29 @@ export async function params(req, url) {
 
 // ---- stats: one atomic write per request, hourly buckets ----
 const hourId = (d = new Date()) => 'h' + d.toISOString().slice(0, 13).replace(/\D/g, '');
-async function record(env, { uid, path, status, ms, cost }) {
+async function record(env, { uid, path, status, ms, paid }) {
   const ops = [{ inc: { doc: ['stats', hourId()], by: { req: 1, err: status >= 400 ? 1 : 0, ms: Math.round(ms) } } }];
-  if (status < 400 && cost > 0) {
-    ops.push({ inc: { doc: ['users', uid], by: { coins: -cost, totalRequests: 1 } } });
-    ops.push({ create: ['usage', { uid, endpoint: path, status: 'success', coins: cost, createdAt: stamp() }] });
+  if (status < 400 && paid > 0) {
+    ops.push({ inc: { doc: ['users', uid], by: { totalRequests: 1 } } });
+    ops.push({ create: ['usage', { uid, endpoint: path, status: 'success', coins: paid, createdAt: stamp() }] });
   }
   try { await fs.commit(env, ops); } catch (e) { console.error('record failed', e?.message); }
+}
+
+// ---- coins: every non-admin call to a paid API is charged BEFORE it runs (atomic increment) and refunded if the call fails.
+//      Fail closed: if the coins cannot be taken, the API does not run (nobody gets a free call because of a billing error).
+const held = new Map(); // coins being charged right now per user (stops parallel requests spending the same balance)
+async function takeCoins(env, uid, balance, cost) {
+  if (!env.FIREBASE_SERVICE_ACCOUNT_JSON) throw new HttpError(503, 'Coin billing is not configured on this server (FIREBASE_SERVICE_ACCOUNT_JSON missing).');
+  const pend = held.get(uid) || 0;
+  if ((balance || 0) - pend < cost) throw new HttpError(402, 'Not enough coins. Claim your daily coins, spin the wheel or ask the admin.');
+  held.set(uid, pend + cost);
+  try { await fs.commit(env, [{ inc: { doc: ['users', uid], by: { coins: -cost } } }]); }
+  catch (e) { console.error('charge failed', e?.message); throw new HttpError(503, 'Could not take the coins. Nothing was charged. Try again.'); }
+  finally { const left = (held.get(uid) || 0) - cost; if (left > 0) held.set(uid, left); else held.delete(uid); }
+}
+async function refundCoins(env, uid, cost) {
+  for (let i = 0; i < 3; i++) { try { await fs.commit(env, [{ inc: { doc: ['users', uid], by: { coins: cost } } }]); return; } catch (e) { console.error('refund failed', uid, cost, e?.message); } }
 }
 
 // ---- live endpoint health: last real result per endpoint (per server instance, no DB writes) ----
@@ -132,23 +148,26 @@ const noteHealth = (path, status) => {
 // ---- the wrapper every public endpoint goes through ----
 export async function serve(req, env, def) {
   const t0 = Date.now(), url = new URL(req.url);
-  let who = null, status = 200, body;
+  let who = null, status = 200, body, paid = 0;
   try {
     who = await caller(req, env, url, def);
     rateLimit(who.u.uid, env, who.anonymous);
     if (!who.isAdmin && (await getFlags(env)).disabledApis.includes(def.path)) throw new HttpError(503, 'This API is switched off by the admin right now.');
-    if (def.cost > 0 && !who.isAdmin && !who.anonymous && (who.p.coins || 0) < def.cost) throw new HttpError(402, 'Not enough coins. Claim your daily coins, spin the wheel or ask the admin.');
+    const payer = def.cost > 0 && !who.isAdmin && !who.anonymous; // admin never pays; everybody else pays this API's price
+    if (payer && (who.p.coins || 0) < def.cost) throw new HttpError(402, 'Not enough coins. Claim your daily coins, spin the wheel or ask the admin.');
     const p = await params(req, url);
+    if (payer) { await takeCoins(env, who.u.uid, who.p.coins, def.cost); paid = def.cost; }
     const result = await def.run(p, env, req);
     body = { creator: CREATOR, success: true, website: url.origin, query: p, result };
   } catch (e) {
     status = e instanceof HttpError ? e.status : 500;
     if (!(e instanceof HttpError)) console.error(def.path, e?.stack || e);
     body = { creator: CREATOR, success: false, website: url.origin, error: e instanceof HttpError ? e.message : 'Internal error. Try again.' };
+    if (paid > 0) { await refundCoins(env, who.u.uid, paid); paid = 0; } // the call failed -> give the coins back
   }
   const ms = Date.now() - t0;
   noteHealth(def.path, status);
-  if (who && env.FIREBASE_SERVICE_ACCOUNT_JSON) await record(env, { uid: who.u.uid, path: def.path, status, ms, cost: who.isAdmin || who.anonymous ? 0 : def.cost || 0 });
+  if (who && env.FIREBASE_SERVICE_ACCOUNT_JSON) await record(env, { uid: who.u.uid, path: def.path, status, ms, paid });
   if (status < 400 && body.result?.__binary) {
     const b = body.result;
     return new Response(b.__binary, { status: 200, headers: { 'Content-Type': b.contentType || 'application/octet-stream', 'Content-Disposition': `attachment; filename="${String(b.filename || 'download').replace(/[^\w.-]/g, '_')}"`, 'Cache-Control': 'no-store', ...CORS, 'X-Response-Time': ms + 'ms' } });
