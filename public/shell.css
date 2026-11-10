@@ -168,3 +168,7 @@ body{background:transparent!important}
 .ps-top .pr{stroke:var(--a);stroke-linecap:round;filter:drop-shadow(0 0 3px rgba(var(--a-rgb),.7))}
 .ps-top .arr{position:relative;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 @media(max-width:650px){.ps-top{right:14px;bottom:calc(14px + env(safe-area-inset-bottom));width:48px;height:48px}}
+
+/* live coin counter: small pop when the number changes */
+.ps-bump{display:inline-block;animation:psBump .7s ease}
+@keyframes psBump{0%{transform:scale(1)}35%{transform:scale(1.4);filter:brightness(1.5)}100%{transform:scale(1)}}

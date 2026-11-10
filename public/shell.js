@@ -178,6 +178,49 @@
     P.auth.currentUser.getIdToken().then(function (t) { return fetch('/api/me', { headers: { Authorization: 'Bearer ' + t } }); })
       .then(function (r) { return r.ok ? r.json() : null; }).then(function (m) { if (m) { P.me = m; renderAll(); D.dispatchEvent(new CustomEvent('ps:me', { detail: m })); } }).catch(function () {});
   }
+  // ---------- LIVE COINS ----------
+  // The coin counter (top bar chip, menu, dashboard) follows the server without a refresh:
+  //  - right after any API call / daily claim / spin made by this page (fetch hook),
+  //  - every 12 s while the tab is visible (catches admin grants, other tabs/devices),
+  //  - when the tab becomes visible again.
+  function paintCoins() {
+    $$('[data-ps-coins]').forEach(function (el) {
+      var t = coins(); if (el.textContent === t) return;
+      el.textContent = t; el.classList.remove('ps-bump'); void el.offsetWidth; el.classList.add('ps-bump');
+    });
+  }
+  function setCoins(n) {
+    if (!P.me || typeof n !== 'number' || P.me.coins === n) return;
+    P.me.coins = n; paintCoins(); D.dispatchEvent(new CustomEvent('ps:coins', { detail: { coins: n } }));
+  }
+  P.setMe = function (m) { // a page that already fetched /api/me hands it over (keeps the chip in sync, no extra request)
+    if (!m) return; var old = P.me; P.me = m;
+    if (!old || old.role !== m.role || old.username !== m.username) renderAll(); else if (old.coins !== m.coins) { old.coins = m.coins; paintCoins(); }
+  };
+  function pollCoins() {
+    if (!P.user || !P.auth || !P.auth.currentUser || !P.me || isAdmin() || D.hidden) return;
+    P.auth.currentUser.getIdToken().then(function (t) { return _fetch('/api/me/coins', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' }); })
+      .then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && typeof d.coins === 'number') setCoins(d.coins); }).catch(function () {});
+  }
+  P.refreshCoins = pollCoins;
+  var _fetch = window.fetch.bind(window), coinTimers = [];
+  var NOPAY = /\/api\/(me|theme|config|music|health|ping|status|load|catalog|endpoint-status|keys|usage|coins\/history|auth)(\/|\?|$)|\/api\/admin\/healthcheck/;
+  window.fetch = function (input, init) {
+    var pr = _fetch(input, init);
+    try {
+      var u = typeof input === 'string' ? input : (input && input.url) || '';
+      if (P.user && !isAdmin() && /\/api\//.test(u) && !NOPAY.test(u)) {
+        coinTimers.push(setTimeout(pollCoins, 1500)); // coins are taken before the API runs -> show it quickly
+        var done = function () { setTimeout(pollCoins, 300); };
+        pr.then(done, done);
+      }
+    } catch (e) {}
+    return pr;
+  };
+  setInterval(pollCoins, 12000);
+  D.addEventListener('visibilitychange', function () { if (!D.hidden) pollCoins(); });
+  addEventListener('focus', pollCoins);
+
   function bootAuth() {
     Promise.all([import('https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js'), import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js')]).then(function (m) {
       var A = m[1]; P.A = A; P.auth = A.getAuth(m[0].initializeApp(FB));

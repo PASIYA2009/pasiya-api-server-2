@@ -181,6 +181,9 @@ r = await call('/api/me', auth, user2); ok('non-admin charged 1 coin', r.b.coins
 await call(`/api/ai/gemini?apikey=${KEY}`, {}, user2); // missing prompt -> 400
 r = await call('/api/me', auth, user2); ok('failed call NOT charged', r.b.coins === c0 - 1, r.b);
 r = await call('/api/usage', auth, user2); ok('usage logged', r.b.items.length === 1, r.b);
+r = await call('/api/me/coins', auth, user2); ok('live coin endpoint matches balance', r.s === 200 && r.b.coins === c0 - 1 && r.b.role === 'user', r);
+r = await call('/api/me/coins', auth); ok('live coin endpoint: admin has no number', r.s === 200 && r.b.role === 'admin' && r.b.coins === null, r);
+r = await call('/api/me/coins'); ok('live coin endpoint needs login', r.s === 401, r);
 
 // drain coins -> 402
 for (let i = 0; i < 12; i++) await call(`/api/ai/gemini?apikey=${KEY}&prompt=hi`, {}, user2);

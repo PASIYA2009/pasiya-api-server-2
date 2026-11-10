@@ -42,6 +42,10 @@ const resolveBucket = new Map();
 export async function account(req, env, p, m) {
   if (p === '/api/music' && m === 'GET') return { success: true, tracks: await getTracks(env) };
   if (p === '/api/theme' && m === 'GET') return { success: true, ...(await getTheme(env)), accents: ACCENTS };
+  if (p === '/api/me/coins' && m === 'GET') { // tiny endpoint polled by the site so the coin counter stays live
+    const c = await session(req, env);
+    return { coins: c.isAdmin ? null : Number(c.p.coins || 0), role: c.isAdmin ? 'admin' : 'user' };
+  }
   if (p === '/api/me' && m === 'GET') {
     const c = await session(req, env);
     const r = await rewardSettings(env), fl = await getFlags(env);
