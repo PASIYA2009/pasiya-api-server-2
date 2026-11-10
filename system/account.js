@@ -30,9 +30,18 @@ export async function getTracks(env) {
   return s.tracks.filter((t) => t && /^[\w-]{11}$/.test(t.id || '')).map((t) => ({ id: t.id, title: String(t.title || '').slice(0, 120) }));
 }
 
+// ---- default theme colour: stored in Firestore settings/theme, edited from the Admin Panel. Shown to visitors who have not picked a colour themselves. ----
+export const ACCENTS = ['blue', 'purple', 'green', 'amber', 'red', 'pink', 'cyan', 'lime'];
+export async function getTheme(env) {
+  let s = null;
+  try { s = await fs.get(env, 'settings', 'theme'); } catch { /* use default */ }
+  return { accent: ACCENTS.includes(s?.accent) ? s.accent : 'blue' };
+}
+
 const resolveBucket = new Map();
 export async function account(req, env, p, m) {
   if (p === '/api/music' && m === 'GET') return { success: true, tracks: await getTracks(env) };
+  if (p === '/api/theme' && m === 'GET') return { success: true, ...(await getTheme(env)), accents: ACCENTS };
   if (p === '/api/me' && m === 'GET') {
     const c = await session(req, env);
     const r = await rewardSettings(env), fl = await getFlags(env);
@@ -153,6 +162,12 @@ export async function account(req, env, p, m) {
       }
       await fs.commit(env, [{ merge: ['settings', 'music', { tracks, updatedAt: stamp(), updatedBy: c.u.email }] }]);
       return { message: 'Songs saved.', tracks };
+    }
+    if (p === '/api/admin/theme' && m === 'POST') {
+      const b = await body(req);
+      if (!ACCENTS.includes(b.accent)) throw new HttpError(400, `accent must be one of: ${ACCENTS.join(', ')}.`);
+      await fs.commit(env, [{ merge: ['settings', 'theme', { accent: b.accent, updatedAt: stamp(), updatedBy: c.u.email }] }]);
+      return { message: 'Default theme saved.', accent: b.accent };
     }
     if (p === '/api/admin/features' && m === 'GET') {
       const fl = await getFlags(env);

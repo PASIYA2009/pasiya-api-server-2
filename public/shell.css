@@ -152,3 +152,9 @@ html{scroll-padding-top:calc(var(--psb-h) + 14px)}
 .psb-tabs a{color:var(--s-muted)}.psb-tabs a.on{color:var(--on-a,#fff)}
 .ps-tag{color:var(--a)}.ps-tag.live{color:#34d399}.ps-tag.adm{color:#f472b6}
 .psb-brand b{-webkit-text-fill-color:transparent}
+
+/* ---------- mobile scroll: never show a white page ---------- */
+html{background-color:#070a14;overscroll-behavior-y:none}
+body{background-color:#070a14}
+#psbg{height:100vh;height:100lvh;transform:translateZ(0);will-change:transform;backface-visibility:hidden}
+.ps-theme{flex-wrap:wrap}.ps-dots{flex-wrap:wrap;justify-content:flex-end}

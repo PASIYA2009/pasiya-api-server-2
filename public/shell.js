@@ -57,7 +57,16 @@
   function logo(id) { return '<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a)"/><stop offset="1" style="stop-color:var(--b)"/></linearGradient></defs><path d="M32 3l25 14.5v29L32 61 7 46.5v-29z" fill="#0b1220" stroke="url(#' + id + ')" stroke-width="3"/><path d="M24 46V19h12a8.5 8.5 0 010 17H24" fill="none" stroke="url(#' + id + ')" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
   // ---------- theme accent (shared by every site) ----------
-  var ACCENTS = [['blue', '#3b9cf5', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber']];
+  var ACCENTS = [['blue', '#3b9cf5', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber'], ['red', '#f04b5b', 'Red'], ['pink', '#ec4899', 'Pink'], ['cyan', '#22d3ee', 'Cyan'], ['lime', '#84cc16', 'Lime']];
+  var ACC_IDS = ACCENTS.map(function (x) { return x[0]; });
+  // admin default colour (Admin Panel > Default theme): used ONLY while the visitor has not picked a colour themselves
+  function applyDefaultAccent(a) {
+    if (ACC_IDS.indexOf(a) < 0) return;
+    LS.set('pasiya_def_accent', a);
+    if (LS.get('pasiya_accent')) return; // the visitor's own choice always wins
+    if (H.dataset.accent !== a) { H.dataset.accent = a; renderDots(); D.dispatchEvent(new CustomEvent('ps:accent', { detail: a })); }
+  }
+  function loadDefaultAccent() { fetch('/api/theme', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { if (d && d.accent) applyDefaultAccent(d.accent); }).catch(function () {}); }
   function setAccent(a) {
     H.dataset.accent = a; LS.set('pasiya_accent', a);
     $$('.ps-dot').forEach(function (b) { b.classList.toggle('on', b.dataset.a === a); });
@@ -74,6 +83,17 @@
   addEventListener('storage', function (e) {
     if (e.key === 'pasiya_accent' && e.newValue && e.newValue !== H.dataset.accent) { H.dataset.accent = e.newValue; renderDots(); D.dispatchEvent(new CustomEvent('ps:accent', { detail: e.newValue })); }
   });
+
+  // browser tab icon follows the chosen colour
+  function updateFavicon() {
+    try {
+      var cs = getComputedStyle(H), a = cs.getPropertyValue('--a').trim(), b = cs.getPropertyValue('--b').trim(); if (!a || !b) return;
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient></defs><path d="M32 4.5 55.5 18v28L32 59.5 8.5 46V18z" fill="#061218" stroke="url(#g)" stroke-width="4.5" stroke-linejoin="round"/><path d="M26.5 44.5v-25h8.5a7.6 7.6 0 0 1 0 15.2h-8.5" fill="none" stroke="url(#g)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var l = $('link#psFav') || D.createElement('link'); l.id = 'psFav'; l.rel = 'icon'; l.type = 'image/svg+xml'; l.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+      if (!l.parentNode) D.head.appendChild(l);
+    } catch (e) {}
+  }
+  D.addEventListener('ps:accent', updateFavicon);
 
   // ---------- where do links go ----------
   // direct = the API worker opened on its own address (workers.dev). Then the other sites live on the OFC domain and need the SSO hand-off.
@@ -339,7 +359,9 @@
       var cs = getComputedStyle(H), pa = cs.getPropertyValue('--a-rgb').split(',').map(Number), pb = cs.getPropertyValue('--b-rgb').split(',').map(Number);
       if (pa.length === 3 && !pa.some(isNaN)) tgt.a = pa; if (pb.length === 3 && !pb.some(isNaN)) tgt.b = pb;
     }
-    function resize() {
+    function resize(ev) {
+      // Mobile browsers fire 'resize' while scrolling (address bar hides/shows). Re-allocating the canvas clears it = white flash. Ignore height-only changes.
+      if (ev && W && Math.abs(innerWidth - W) < 2 && Math.abs(innerHeight - Hh) < 220) return;
       var dpr = Math.min(window.devicePixelRatio || 1, 1.5); W = innerWidth; Hh = innerHeight;
       c.width = Math.round(W * dpr); c.height = Math.round(Hh * dpr); x.setTransform(dpr, 0, 0, dpr, 0, 0);
       var n = Math.round(Math.min(64, Math.max(20, W * Hh / 24000))); nodes = [];
@@ -401,13 +423,13 @@
 
   function renderAll() { renderDots(); renderSites(); renderAccount(); renderAdmin(); renderAccountLinks(); }
   function start() {
-    H.dataset.accent = LS.get('pasiya_accent') || H.dataset.accent || 'blue';
+    H.dataset.accent = LS.get('pasiya_accent') || LS.get('pasiya_def_accent') || H.dataset.accent || 'blue'; loadDefaultAccent();
     if (!$('link[href*="family=Inter"]')) { var l = D.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'; D.head.appendChild(l); }
-    bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter();
+    updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter();
     fetch('/api/config').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (c) { P.cfg = c || {}; renderAll(); });
     bootAuth();
     fixTops(); setTimeout(fixTops, 900); setTimeout(fixTops, 3000); addEventListener('resize', fixTops);
   }
-  P.setAccent = setAccent; P.render = renderAll; P.openMenu = openMenu;
+  P.setAccent = setAccent; P.applyDefaultAccent = applyDefaultAccent; P.render = renderAll; P.openMenu = openMenu;
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', start); else start();
 })();

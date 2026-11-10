@@ -1,7 +1,11 @@
 /* PASIYA shared palette (API site + OFC site). The accent is picked from the menu and saved in localStorage "pasiya_accent". */
-:root{--a:#3b9cf5;--b:#6a5be6;--a-rgb:59,156,245;--b-rgb:106,91,230;--on-a:#fff}
-:root[data-accent=purple]{--a:#a371f7;--b:#e056c8;--a-rgb:163,113,247;--b-rgb:224,86,200;--on-a:#fff}
-:root[data-accent=green]{--a:#14c78a;--b:#2dd4d4;--a-rgb:20,199,138;--b-rgb:45,212,212;--on-a:#04140e}
-:root[data-accent=amber]{--a:#f5a524;--b:#f97316;--a-rgb:245,165,36;--b-rgb:249,115,22;--on-a:#1a0d00}
+:root{--logo-hue:0deg;--a:#3b9cf5;--b:#6a5be6;--a-rgb:59,156,245;--b-rgb:106,91,230;--on-a:#fff}
+:root[data-accent=purple]{--logo-hue:58deg;--a:#a371f7;--b:#e056c8;--a-rgb:163,113,247;--b-rgb:224,86,200;--on-a:#fff}
+:root[data-accent=green]{--logo-hue:-47deg;--a:#14c78a;--b:#2dd4d4;--a-rgb:20,199,138;--b-rgb:45,212,212;--on-a:#04140e}
+:root[data-accent=amber]{--logo-hue:-169deg;--a:#f5a524;--b:#f97316;--a-rgb:245,165,36;--b-rgb:249,115,22;--on-a:#1a0d00}
+:root[data-accent=red]{--logo-hue:148deg;--a:#f04b5b;--b:#ff7a45;--a-rgb:240,75,91;--b-rgb:255,122,69;--on-a:#fff}
+:root[data-accent=pink]{--logo-hue:123deg;--a:#ec4899;--b:#fb7185;--a-rgb:236,72,153;--b-rgb:251,113,133;--on-a:#fff}
+:root[data-accent=cyan]{--logo-hue:-20deg;--a:#22d3ee;--b:#3b82f6;--a-rgb:34,211,238;--b-rgb:59,130,246;--on-a:#03151a}
+:root[data-accent=lime]{--logo-hue:-123deg;--a:#84cc16;--b:#22c55e;--a-rgb:132,204,22;--b-rgb:34,197,94;--on-a:#0a1400}
 :root{--primary:var(--a);--violet:var(--b);--on-primary:var(--on-a)}
 :root[data-theme=light]{--primary:color-mix(in srgb,var(--a) 78%,#000);--violet:color-mix(in srgb,var(--b) 80%,#000);--on-primary:#fff}

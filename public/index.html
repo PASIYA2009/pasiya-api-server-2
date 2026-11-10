@@ -197,7 +197,7 @@ body{background:transparent!important}body::before{display:none}
 .card,.panel{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-color:rgba(var(--a-rgb),.16)}
 .card:hover{border-color:rgba(var(--a-rgb),.38)}
 </style>
-<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{document.documentElement.dataset.accent=localStorage.getItem("pasiya_accent")||"blue"}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script></head>
+<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{document.documentElement.dataset.accent=localStorage.getItem("pasiya_accent")||localStorage.getItem("pasiya_def_accent")||"blue"}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script></head>
 <body>
 <div hidden id="legacyStubs" aria-hidden="true">
   <button id="themeBtn"></button><a id="regTop"></a><a id="loginTop"></a><button id="userBtn"></button><button id="menuBtn"></button><button id="menuClose"></button><div id="drawerBack"></div><div id="sideMenu"></div>
@@ -288,6 +288,11 @@ body{background:transparent!important}body::before{display:none}
     <p class="muted">Show or hide the free rewards for every user. When a switch is off nobody sees that reward (admins never see them).</p>
     <div class="switches"><label class="sw"><input type="checkbox" id="swDaily"><span class="track"></span><span>Daily coin claim</span></label><label class="sw"><input type="checkbox" id="swSpin"><span class="track"></span><span>Daily lucky spin</span></label></div>
     <p class="muted" id="featMsg"></p>
+    <hr class="sep">
+    <h2>Default theme colour</h2>
+    <p class="muted">The colour every NEW visitor sees first when they open the site. Visitors who already picked a colour from the menu keep their own choice. Changes reach everyone within a few seconds.</p>
+    <div class="rows" id="themeDots" style="display:flex;flex-wrap:wrap;gap:12px;padding:6px 0"></div>
+    <p class="muted" id="themeMsg"></p>
     <hr class="sep">
     <div class="panel-head"><h2>Background music</h2><span class="muted"><b id="musicCount">0</b> songs</span></div>
     <p class="muted">Paste a YouTube song link and press <b>Add song</b>. Remove any song with its button. Changes reach every visitor within about 30 seconds.</p>
@@ -594,7 +599,7 @@ async function refreshAll() {
     $$('[data-rev]').forEach((b) => (b.onclick = async () => { if (!confirm('Revoke this key? Apps using it will stop working.')) return; try { await authed('/api/keys/revoke', { method: 'POST', body: JSON.stringify({ id: b.dataset.rev }) }); toast('Key revoked'); refreshAll(); } catch (e) { toast(e.message); } }));
     $('#usageList').innerHTML = (us.items || []).map((x) => rowHtml(x.endpoint, `−${x.coins} · ${new Date(x.createdAt).toLocaleString()}`)).join('') || '<div class="muted">No paid calls yet.</div>';
     $('#coinList').innerHTML = (ch.items || []).map((x) => rowHtml(x.reason, `${x.amount > 0 ? '+' : ''}${x.amount} → ${x.balance}`)).join('') || '<div class="muted">No coin changes yet.</div>';
-    if (me.role === 'admin') { loadFeatures(); loadAdminMusic(); try { const o = await authed('/api/admin/overview'); $('#adminOverview').textContent = `Registered users: ${o.users}. Give coins to any registered user by their email.`; if (document.activeElement !== $('#setDaily')) $('#setDaily').value = o.dailyCoins; if (document.activeElement !== $('#setSpin')) $('#setSpin').value = o.spinMax; } catch {} }
+    if (me.role === 'admin') { loadFeatures(); loadAdminMusic(); loadAdminTheme(); try { const o = await authed('/api/admin/overview'); $('#adminOverview').textContent = `Registered users: ${o.users}. Give coins to any registered user by their email.`; if (document.activeElement !== $('#setDaily')) $('#setDaily').value = o.dailyCoins; if (document.activeElement !== $('#setSpin')) $('#setSpin').value = o.spinMax; } catch {} }
   } catch (e) { toast(e.message); }
 }
 $('#newKey').onclick = async () => { try { const d = await authed('/api/keys', { method: 'POST', body: '{}' }); showKey(d.key); refreshAll(); } catch (e) { toast(e.message); } };
@@ -674,6 +679,17 @@ $('#hcRun').onclick = async () => {
   }
   const n = (s) => Object.values(A.hc).filter((x) => x.state === s).length;
   $('#hcMsg').textContent = `Done: ${n('ok')} working, ${n('fail')} failed, ${n('warn')} need a real link to prove, ${n('skip')} not tested.`; btn.disabled = false; renderApis();
+};
+
+// ---- admin: default theme colour (what new visitors see first) ----
+const TH = { list: [['blue', '#3b9cf5'], ['purple', '#a371f7'], ['green', '#14c78a'], ['amber', '#f5a524'], ['red', '#f04b5b'], ['pink', '#ec4899'], ['cyan', '#22d3ee'], ['lime', '#84cc16']], cur: 'blue' };
+function renderThemeDots() {
+  $('#themeDots').innerHTML = TH.list.map(([id, c]) => `<button type="button" class="ps-dot${id === TH.cur ? ' on' : ''}" data-tdef="${id}" style="--c:${c};width:34px;height:34px" aria-label="${id}" title="${id}"></button>`).join('');
+}
+async function loadAdminTheme() { try { TH.cur = (await (await fetch('/api/theme', { cache: 'no-store' })).json()).accent || 'blue'; } catch {} renderThemeDots(); }
+$('#themeDots').onclick = async (e) => {
+  const id = e.target.dataset?.tdef; if (!id) return;
+  try { await authed('/api/admin/theme', { method: 'POST', body: JSON.stringify({ accent: id }) }); TH.cur = id; renderThemeDots(); $('#themeMsg').textContent = `Default theme: ${id}. New visitors will see it first.`; window.PS?.applyDefaultAccent?.(id); } catch (err) { $('#themeMsg').textContent = err.message; }
 };
 
 // ---- admin: background music manager ----
