@@ -421,11 +421,34 @@
     function setUp(ok) { var u = $('#psUp'); if (!u) return; u.className = 'ps-up' + (ok ? '' : ' warn'); u.innerHTML = '<i></i>' + (ok ? 'All systems online \u2713' : 'Status unavailable'); }
   }
 
+  // ====================================================================================
+  //  BACK-TO-TOP BUTTON (round, scroll-progress ring) - same look as the portfolio, on every site.
+  //  The portfolio has its own #toTop, so nothing is added there.
+  // ====================================================================================
+  function bootTop() {
+    if (D.getElementById('toTop') || D.getElementById('psTop')) return;
+    var b = D.createElement('button'); b.id = 'psTop'; b.type = 'button'; b.className = 'ps-top'; b.setAttribute('aria-label', 'Back to top');
+    b.innerHTML = '<svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle class="bg" cx="22" cy="22" r="19"></circle><circle class="pr" cx="22" cy="22" r="19"></circle></svg><svg class="arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    D.body.appendChild(b);
+    var pr = b.querySelector('.pr'), circ = 2 * Math.PI * 19, tick = false;
+    pr.style.strokeDasharray = circ; pr.style.strokeDashoffset = circ;
+    function upd() {
+      tick = false;
+      var se = D.scrollingElement || D.documentElement, max = se.scrollHeight - window.innerHeight, y = window.pageYOffset || se.scrollTop || 0;
+      pr.style.strokeDashoffset = circ - circ * (max > 0 ? Math.min(1, y / max) : 0);
+      b.classList.toggle('show', y > 280 && max > 400);
+    }
+    addEventListener('scroll', function () { if (!tick) { tick = true; requestAnimationFrame(upd); } }, { passive: true });
+    addEventListener('resize', upd);
+    b.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    upd();
+  }
+
   function renderAll() { renderDots(); renderSites(); renderAccount(); renderAdmin(); renderAccountLinks(); }
   function start() {
     H.dataset.accent = LS.get('pasiya_accent') || LS.get('pasiya_def_accent') || H.dataset.accent || 'blue'; loadDefaultAccent();
     if (!$('link[href*="family=Inter"]')) { var l = D.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'; D.head.appendChild(l); }
-    updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter();
+    updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter(); bootTop();
     fetch('/api/config').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (c) { P.cfg = c || {}; renderAll(); });
     bootAuth();
     fixTops(); setTimeout(fixTops, 900); setTimeout(fixTops, 3000); addEventListener('resize', fixTops);
