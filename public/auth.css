@@ -36,3 +36,7 @@ label{display:block;margin:14px 0 7px;font:700 13px var(--mono);letter-spacing:.
 .alt{margin:18px 0 0;padding-top:18px;border-top:1px solid var(--line);text-align:center;color:var(--muted)}.alt a{color:var(--primary);font-weight:700}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:.2s;background:var(--surface);border:1px solid var(--primary);padding:12px 18px;border-radius:12px;font-weight:600;font-size:13px;max-width:90vw}.toast.on{opacity:1;transform:translate(-50%,0)}
 @media(max-width:420px){.x{}.card{padding:24px 18px}.link{display:none}}
+
+/* top bar / menu / animated background come from /shell.js */
+html{background:#070a14}body{background:transparent!important}body::before{display:none}.bar{display:none!important}
+.card{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
