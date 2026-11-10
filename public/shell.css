@@ -155,6 +155,7 @@ html{scroll-padding-top:calc(var(--psb-h) + 14px)}
 
 /* ---------- mobile scroll: never show a white page ---------- */
 html{background-color:#070a14;overscroll-behavior-y:none}
-body{background-color:#070a14}
+/* body must be transparent: an opaque body background paints OVER the animated canvas (#psbg, z-index:-1). The dark colour lives on <html>. */
+body{background:transparent!important}
 #psbg{height:100vh;height:100lvh;transform:translateZ(0);will-change:transform;backface-visibility:hidden}
 .ps-theme{flex-wrap:wrap}.ps-dots{flex-wrap:wrap;justify-content:flex-end}
