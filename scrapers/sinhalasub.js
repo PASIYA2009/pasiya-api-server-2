@@ -1,10 +1,10 @@
-// SinhalaSub API integration. Ported from the supplied working v5 scraper.
-// Uses the existing PASIYA API fetch/error/parameter helpers; no existing system files are replaced.
+// SinhalaSub endpoints added to PASIYA API without changing the existing API system.
+// Ported from the supplied sinhalasub-v5 working project to the existing Cloudflare-compatible helpers.
 import { HttpError, fetchT, stripHtml, param } from '../system/util.js';
 
 const BASE_URL = 'https://sinhalasub.lk';
 const HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 };
 
@@ -25,16 +25,6 @@ function isLandingPage(value) {
   if (!u || !isSinhalaSubUrl(u)) return false;
   return /^\/links\/[^/]+\/?$/i.test(new URL(u).pathname);
 }
-async function getHtml(url) {
-  let response;
-  try {
-    response = await fetchT(url, { headers: HEADERS, redirect: 'follow' }, 15000);
-  } catch (e) {
-    throw e;
-  }
-  if (!response.ok) throw new HttpError(response.status >= 400 ? 502 : response.status, `Upstream server returned HTTP ${response.status}.`);
-  return { html: await response.text(), finalUrl: response.url || url, status: response.status };
-}
 function attrs(tag) {
   const out = {};
   for (const m of String(tag || '').matchAll(/([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)) {
@@ -43,20 +33,33 @@ function attrs(tag) {
   return out;
 }
 function decodeText(s) {
-  return stripHtml(String(s || '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, ''));
+  return stripHtml(String(s || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, ''));
 }
 function findTitle(html) {
-  const og = html.match(/<meta\b(?=[^>]*property=["']og:title["'])(?=[^>]*content=["']([^"']*)["'])[^>]*>/i);
+  const meta = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => attrs(m[0]));
+  const og = meta.find(a => a.property?.toLowerCase() === 'og:title');
   const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
   const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
-  return decodeText(og?.[1] || h1?.[1] || title?.[1] || '') || null;
+  return decodeText(og?.content || h1?.[1] || title?.[1] || '') || null;
+}
+async function getHtml(url) {
+  let response;
+  try {
+    response = await fetchT(url, { headers: HEADERS, redirect: 'follow' }, 15000);
+  } catch (e) {
+    throw new HttpError(502, e?.message || 'Could not connect to SinhalaSub.');
+  }
+  if (!response.ok) throw new HttpError(502, `Upstream server returned HTTP ${response.status}.`);
+  return { html: await response.text(), finalUrl: response.url || url, status: response.status };
 }
 function extractPublicMediaUrl(html, pageUrl) {
   const source = String(html || '')
     .replace(/\\u0026/gi, '&')
     .replace(/\\\//g, '/')
     .replace(/&amp;/g, '&');
-  const candidates = source.match(/https?:[^"'\s<>]+?\.(?:mp4|mkv|avi|mov|m4v)(?:\?[^"'\s<>]*)?/gi) || [];
+  const candidates = source.match(/https?:[^"'\s<>\\]+?\.(?:mp4|mkv|avi|mov|m4v)(?:\?[^"'\s<>\\]*)?/gi) || [];
   for (const candidate of candidates) {
     const url = absoluteUrl(candidate.replace(/[),;]+$/g, ''), pageUrl);
     if (url && /\.(mp4|mkv|avi|mov|m4v)$/i.test(new URL(url).pathname)) return url;
@@ -73,6 +76,8 @@ function extractPublicMediaUrl(html, pageUrl) {
   }
   return null;
 }
+
+// 1. Search API — same query parameter and result fields as the supplied project.
 async function searchMovies(p) {
   const query = String(p.q || '').trim();
   if (!query) throw new HttpError(400, 'Search query "q" is required.');
@@ -93,6 +98,8 @@ async function searchMovies(p) {
   }
   return { creator: '@pasidueshan', success: true, query, results };
 }
+
+// 2. Details API — same URL input and fields as the supplied project.
 async function getMovieDetails(p) {
   const url = absoluteUrl(p.url);
   if (!url || !isSinhalaSubUrl(url) || !new URL(url).pathname.includes('/movies/')) {
@@ -102,7 +109,7 @@ async function getMovieDetails(p) {
   const meta = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => attrs(m[0]));
   const og = meta.find(a => a.property?.toLowerCase() === 'og:image');
   const desc = meta.find(a => a.property?.toLowerCase() === 'og:description');
-  const posterFallback = html.match(/<(?:img)\b[^>]*(?:class=["'][^"']*(?:poster|thumbnail)[^"']*["'])[^>]*>/i);
+  const posterFallback = html.match(/<img\b[^>]*(?:class=["'][^"']*(?:poster|thumbnail)[^"']*["'])[^>]*>/i);
   const posterAttr = attrs(posterFallback?.[0] || '');
   const downloadLinks = [];
   const seen = new Set();
@@ -126,18 +133,25 @@ async function getMovieDetails(p) {
     }
   };
 }
+
+// 3. Download-link resolver — same /links/ URL input and extraction logic as supplied.
+// It returns the discovered public link; it does not proxy or store the file on PASIYA servers.
 async function resolvePublicDownload(p) {
   const url = absoluteUrl(p.url);
   if (!url || !isLandingPage(url)) throw new HttpError(400, 'A valid SinhalaSub /links/ page URL is required.');
   const { html, finalUrl } = await getHtml(url);
   const postIdMatch = html.match(/(?:post_id|postId)["'\s:=]+([0-9]{3,})/i);
-  const input = [...html.matchAll(/<(?:input)\b[^>]*>/gi)].map(m => attrs(m[0]));
-  const postId = input.find(a => ['post_id', 'postId'].includes(a.name))?.value
+  const inputs = [...html.matchAll(/<input\b[^>]*>/gi)].map(m => attrs(m[0]));
+  const postId = inputs.find(a => ['post_id', 'postId'].includes(a.name))?.value
     || html.match(/data-post-id=["']([^"']+)["']/i)?.[1]
     || postIdMatch?.[1]
     || null;
   const downloadUrl = extractPublicMediaUrl(html, finalUrl);
-  const fileName = downloadUrl ? decodeURIComponent(new URL(downloadUrl).pathname.split('/').pop()) : null;
+  let fileName = null;
+  if (downloadUrl) {
+    try { fileName = decodeURIComponent(new URL(downloadUrl).pathname.split('/').pop()); }
+    catch { fileName = new URL(downloadUrl).pathname.split('/').pop(); }
+  }
   return {
     creator: '@pasidueshan',
     success: true,
@@ -145,8 +159,9 @@ async function resolvePublicDownload(p) {
     result: { page: finalUrl, title: findTitle(html), postId, waitTime: 6, fileName, downloadUrl, found: Boolean(downloadUrl) }
   };
 }
+
 export default [
-  { path: '/api/movie/search', category: 'Movie', name: 'SinhalaSub search', cost: 1, desc: 'Search SinhalaSub movies', params: [param('q', 'Avatar', 'Movie search query')], run: searchMovies },
-  { path: '/api/movie/details', category: 'Movie', name: 'SinhalaSub details', cost: 1, desc: 'Get SinhalaSub movie details and download link pages', params: [param('url', 'https://sinhalasub.lk/movies/example/', 'SinhalaSub movie page URL')], run: getMovieDetails },
-  { path: '/api/movie/download', category: 'Movie', name: 'SinhalaSub download', cost: 1, desc: 'Resolve a public download URL from a SinhalaSub link page', params: [param('url', 'https://sinhalasub.lk/links/example/', 'SinhalaSub link-page URL')], run: resolvePublicDownload }
+  { path: '/api/sinhalasub/search', category: 'Movie', name: 'SinhalaSub Search', cost: 1, isNew: true, desc: 'Search SinhalaSub movie titles and posters', params: [param('q', 'Avatar', 'Movie search query')], run: searchMovies },
+  { path: '/api/sinhalasub/details', category: 'Movie', name: 'SinhalaSub Details', cost: 1, isNew: true, desc: 'Get SinhalaSub movie details and download link pages', params: [param('url', 'https://sinhalasub.lk/movies/example/', 'SinhalaSub movie page URL')], run: getMovieDetails },
+  { path: '/api/sinhalasub/download', category: 'Movie', name: 'SinhalaSub Download', cost: 1, isNew: true, desc: 'Resolve the public download link from a SinhalaSub link page', params: [param('url', 'https://sinhalasub.lk/links/example/', 'SinhalaSub link-page URL')], run: resolvePublicDownload }
 ];
