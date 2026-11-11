@@ -1,101 +1,152 @@
-// SinhalaSub movie catalog integration.
-// Search and details expose page metadata. The download endpoint returns the
-// source's link page only; it does not extract or proxy copyrighted media files.
+// SinhalaSub API integration. Ported from the supplied working v5 scraper.
+// Uses the existing PASIYA API fetch/error/parameter helpers; no existing system files are replaced.
 import { HttpError, fetchT, stripHtml, param } from '../system/util.js';
 
-const BASE = 'https://sinhalasub.lk';
+const BASE_URL = 'https://sinhalasub.lk';
 const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml'
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
 };
 
-function safeUrl(value, base = BASE) {
+function absoluteUrl(value, base = BASE_URL) {
   try {
     const u = new URL(value, base);
-    if (!['http:', 'https:'].includes(u.protocol)) return null;
-    return u.href;
+    return ['http:', 'https:'].includes(u.protocol) ? u.href : null;
   } catch { return null; }
 }
-function sourceUrl(value) {
-  const u = safeUrl(value);
-  if (!u) return null;
+function isSinhalaSubUrl(value) {
+  const u = absoluteUrl(value);
+  if (!u) return false;
   const host = new URL(u).hostname.toLowerCase();
-  return host === 'sinhalasub.lk' || host.endsWith('.sinhalasub.lk') ? u : null;
+  return host === 'sinhalasub.lk' || host.endsWith('.sinhalasub.lk');
 }
-async function page(url) {
-  const r = await fetchT(url, { headers: HEADERS, redirect: 'follow' }, 15000);
-  if (!r.ok) throw new HttpError(502, `SinhalaSub returned HTTP ${r.status}.`);
-  return { html: await r.text(), finalUrl: r.url || url };
+function isLandingPage(value) {
+  const u = absoluteUrl(value);
+  if (!u || !isSinhalaSubUrl(u)) return false;
+  return /^\/links\/[^/]+\/?$/i.test(new URL(u).pathname);
 }
-function attr(tag, name) {
-  const re = new RegExp("(?:^|\\\\s)" + name + "\\\\s*=\\\\s*[\"']([^\"']*)[\"']", 'i');
-  return (tag.match(re) || [])[1] || '';
+async function getHtml(url) {
+  let response;
+  try {
+    response = await fetchT(url, { headers: HEADERS, redirect: 'follow' }, 15000);
+  } catch (e) {
+    throw e;
+  }
+  if (!response.ok) throw new HttpError(response.status >= 400 ? 502 : response.status, `Upstream server returned HTTP ${response.status}.`);
+  return { html: await response.text(), finalUrl: response.url || url, status: response.status };
 }
-function textOf(s) { return stripHtml(String(s || '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, '')); }
-function titleFrom(html) {
-  const og = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)/i);
-  const h1 = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
-  const t = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  return textOf(og?.[1] || h1?.[1] || t?.[1] || '') || null;
+function attrs(tag) {
+  const out = {};
+  for (const m of String(tag || '').matchAll(/([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)) {
+    out[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
+  }
+  return out;
 }
-function isLinkPage(value) {
-  const u = sourceUrl(value);
-  return !!u && /^\/links\/[^/]+\/?$/i.test(new URL(u).pathname);
+function decodeText(s) {
+  return stripHtml(String(s || '').replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<style[\s\S]*?<\/style>/gi, ''));
 }
-async function search(p) {
-  const q = String(p.q || '').trim();
-  if (!q || q.length > 120) throw new HttpError(400, 'q is required (maximum 120 characters).');
-  const url = `${BASE}/?s=${encodeURIComponent(q)}`;
-  const { html } = await page(url);
-  const results = [], seen = new Set();
-  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-    const href = sourceUrl(m[1]);
-    if (!href || !new URL(href).pathname.includes('/movies/')) continue;
-    const title = textOf(attr(m[0].slice(0, m[0].indexOf('>') + 1), 'title') || m[2]);
-    if (title.length < 3 || seen.has(href)) continue;
+function findTitle(html) {
+  const og = html.match(/<meta\b(?=[^>]*property=["']og:title["'])(?=[^>]*content=["']([^"']*)["'])[^>]*>/i);
+  const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+  const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  return decodeText(og?.[1] || h1?.[1] || title?.[1] || '') || null;
+}
+function extractPublicMediaUrl(html, pageUrl) {
+  const source = String(html || '')
+    .replace(/\\u0026/gi, '&')
+    .replace(/\\\//g, '/')
+    .replace(/&amp;/g, '&');
+  const candidates = source.match(/https?:[^"'\s<>]+?\.(?:mp4|mkv|avi|mov|m4v)(?:\?[^"'\s<>]*)?/gi) || [];
+  for (const candidate of candidates) {
+    const url = absoluteUrl(candidate.replace(/[),;]+$/g, ''), pageUrl);
+    if (url && /\.(mp4|mkv|avi|mov|m4v)$/i.test(new URL(url).pathname)) return url;
+  }
+  const patterns = source.match(/https?:\/\/[^"'\s<>]+\/(?:storage|dl|download|files|stream)\/[^"'\s<>]+/gi) || [];
+  for (const match of patterns) {
+    const url = absoluteUrl(match.replace(/[),;]+$/g, ''), pageUrl);
+    if (url) return url;
+  }
+  const cdn = source.match(/https?:\/\/[^"'\s<>]+\.net\/[^"'\s<>]+/i);
+  if (cdn) {
+    const url = absoluteUrl(cdn[0], pageUrl);
+    if (url && !new URL(url).hostname.endsWith('sinhalasub.lk')) return url;
+  }
+  return null;
+}
+async function searchMovies(p) {
+  const query = String(p.q || '').trim();
+  if (!query) throw new HttpError(400, 'Search query "q" is required.');
+  if (query.length > 120) throw new HttpError(400, 'Search query is too long.');
+  const { html } = await getHtml(`${BASE_URL}/?s=${encodeURIComponent(query)}`);
+  const results = [];
+  const seen = new Set();
+  for (const m of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+    const a = attrs(m[1]);
+    const href = absoluteUrl(a.href);
+    const title = (a.title || decodeText(m[2])).replace(/\s+/g, ' ').trim();
+    if (!href || !isSinhalaSubUrl(href) || !new URL(href).pathname.includes('/movies/') || title.length <= 3 || seen.has(href)) continue;
+    const imgTag = m[2].match(/<img\b[^>]*>/i)?.[0] || '';
+    const img = attrs(imgTag);
+    const poster = absoluteUrl(img['data-src'] || img.src || img['data-lazy-src'] || '');
     seen.add(href);
-    const img = m[2].match(/<img\b[^>]*>/i)?.[0] || '';
-    const poster = safeUrl(attr(img, 'data-src') || attr(img, 'src') || attr(img, 'data-lazy-src'));
     results.push({ title, url: href, poster });
-    if (results.length >= 30) break;
   }
-  return { query: q, count: results.length, results };
+  return { creator: '@pasidueshan', success: true, query, results };
 }
-async function details(p) {
-  const url = sourceUrl(p.url);
-  if (!url || !new URL(url).pathname.includes('/movies/')) throw new HttpError(400, 'A valid SinhalaSub movie page URL is required.');
-  const { html, finalUrl } = await page(url);
-  const posterTag = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']*)/i);
-  const descTag = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)/i);
-  const links = [], seen = new Set();
-  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-    const href = safeUrl(m[1], finalUrl);
-    if (!href || !isLinkPage(href) || seen.has(href)) continue;
+async function getMovieDetails(p) {
+  const url = absoluteUrl(p.url);
+  if (!url || !isSinhalaSubUrl(url) || !new URL(url).pathname.includes('/movies/')) {
+    throw new HttpError(400, 'A valid SinhalaSub movie page URL is required.');
+  }
+  const { html, finalUrl } = await getHtml(url);
+  const meta = [...html.matchAll(/<meta\b[^>]*>/gi)].map(m => attrs(m[0]));
+  const og = meta.find(a => a.property?.toLowerCase() === 'og:image');
+  const desc = meta.find(a => a.property?.toLowerCase() === 'og:description');
+  const posterFallback = html.match(/<(?:img)\b[^>]*(?:class=["'][^"']*(?:poster|thumbnail)[^"']*["'])[^>]*>/i);
+  const posterAttr = attrs(posterFallback?.[0] || '');
+  const downloadLinks = [];
+  const seen = new Set();
+  for (const m of html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)) {
+    const a = attrs(m[1]);
+    const href = absoluteUrl(a.href, finalUrl);
+    if (!href || !isLandingPage(href) || seen.has(href)) continue;
     seen.add(href);
-    links.push({ text: textOf(m[2]) || 'SinhalaSub link page', url: href });
+    downloadLinks.push({ text: decodeText(m[2]) || 'Download Link', url: href });
   }
   return {
-    page: finalUrl, title: titleFrom(html),
-    poster: safeUrl(posterTag?.[1] || ''),
-    synopsis: textOf(descTag?.[1] || '') || null,
-    downloadLinks: links
+    creator: '@pasidueshan',
+    success: true,
+    query: url,
+    result: {
+      page: finalUrl,
+      title: findTitle(html),
+      poster: absoluteUrl(og?.content || posterAttr.src || posterAttr['data-src'] || ''),
+      synopsis: decodeText(desc?.content || '') || null,
+      downloadLinks
+    }
   };
 }
-async function downloadPage(p) {
-  const url = sourceUrl(p.url);
-  if (!url || !isLinkPage(url)) throw new HttpError(400, 'A valid SinhalaSub /links/ page URL is required.');
-  const { html, finalUrl } = await page(url);
+async function resolvePublicDownload(p) {
+  const url = absoluteUrl(p.url);
+  if (!url || !isLandingPage(url)) throw new HttpError(400, 'A valid SinhalaSub /links/ page URL is required.');
+  const { html, finalUrl } = await getHtml(url);
+  const postIdMatch = html.match(/(?:post_id|postId)["'\s:=]+([0-9]{3,})/i);
+  const input = [...html.matchAll(/<(?:input)\b[^>]*>/gi)].map(m => attrs(m[0]));
+  const postId = input.find(a => ['post_id', 'postId'].includes(a.name))?.value
+    || html.match(/data-post-id=["']([^"']+)["']/i)?.[1]
+    || postIdMatch?.[1]
+    || null;
+  const downloadUrl = extractPublicMediaUrl(html, finalUrl);
+  const fileName = downloadUrl ? decodeURIComponent(new URL(downloadUrl).pathname.split('/').pop()) : null;
   return {
-    page: finalUrl,
-    title: titleFrom(html),
-    available: true,
-    downloadUrl: null,
-    message: 'This endpoint returns the source link page only. Use an official or rights-authorized download option on that page.'
+    creator: '@pasidueshan',
+    success: true,
+    query: url,
+    result: { page: finalUrl, title: findTitle(html), postId, waitTime: 6, fileName, downloadUrl, found: Boolean(downloadUrl) }
   };
 }
-
 export default [
-  { path: '/api/movie/search', category: 'Movie', name: 'SinhalaSub search', cost: 1, desc: 'Search SinhalaSub movie titles and posters', params: [param('q', 'Avatar', 'Movie search query')], run: search },
-  { path: '/api/movie/details', category: 'Movie', name: 'SinhalaSub details', cost: 1, desc: 'Get movie details and source link-page references', params: [param('url', 'https://sinhalasub.lk/movies/example/', 'SinhalaSub movie page URL')], run: details },
-  { path: '/api/movie/download', category: 'Movie', name: 'SinhalaSub download', cost: 1, desc: 'Check a SinhalaSub link page and return its page reference', params: [param('url', 'https://sinhalasub.lk/links/example/', 'SinhalaSub link-page URL')], run: downloadPage }
+  { path: '/api/movie/search', category: 'Movie', name: 'SinhalaSub search', cost: 1, desc: 'Search SinhalaSub movies', params: [param('q', 'Avatar', 'Movie search query')], run: searchMovies },
+  { path: '/api/movie/details', category: 'Movie', name: 'SinhalaSub details', cost: 1, desc: 'Get SinhalaSub movie details and download link pages', params: [param('url', 'https://sinhalasub.lk/movies/example/', 'SinhalaSub movie page URL')], run: getMovieDetails },
+  { path: '/api/movie/download', category: 'Movie', name: 'SinhalaSub download', cost: 1, desc: 'Resolve a public download URL from a SinhalaSub link page', params: [param('url', 'https://sinhalasub.lk/links/example/', 'SinhalaSub link-page URL')], run: resolvePublicDownload }
 ];
