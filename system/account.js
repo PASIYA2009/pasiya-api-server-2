@@ -1,5 +1,5 @@
 // Dashboard account endpoints: profile, API keys, daily claim, lucky spin, usage, admin tools.
-import { HttpError, stamp, sha256, randomHex, ytId } from './util.js';
+import { HttpError, stamp, sha256, randomHex, ytId, cached } from './util.js';
 import * as fs from './db.js';
 import { session, identity, forgetKeys, isAdminEmail } from './gateway.js';
 import { getFlags, resetFlags } from './flags.js';
@@ -39,6 +39,32 @@ export async function getTheme(env) {
 }
 
 const resolveBucket = new Map();
+async function usageAnalytics(env) {
+  const now = Date.now(), hours = 168;
+  const ids = Array.from({ length: hours }, (_, i) => { const d = new Date(now - i * 3600000); return 'h' + d.toISOString().slice(0, 13).replace(/\D/g, ''); });
+  const docs = await fs.batchGet(env, 'stats', ids);
+  const byId = new Map(docs.map((d) => [d.id, d]));
+  const hourly = Array.from({ length: 24 }, (_, i) => {
+    const d = new Date(now - (23 - i) * 3600000), id = 'h' + d.toISOString().slice(0, 13).replace(/\D/g, '');
+    return { label: d.toISOString().slice(11, 13) + ':00', requests: Number(byId.get(id)?.req || 0) };
+  });
+  const totals = new Map(), timeOfDay = Array(24).fill(0); let total7d = 0;
+  for (const [id, doc] of byId) {
+    total7d += Number(doc.req || 0);
+    const hh = Number(id.slice(-2)); if (hh >= 0 && hh < 24) timeOfDay[hh] += Number(doc.req || 0);
+    for (const [key, value] of Object.entries(doc)) if (key.startsWith('api_') && Number(value) > 0) {
+      try {
+        const hex = key.slice(4), bytes = new Uint8Array((hex.match(/.{2}/g) || []).map((x) => parseInt(x, 16)));
+        const path = new TextDecoder().decode(bytes); totals.set(path, (totals.get(path) || 0) + Number(value));
+      } catch {}
+    }
+  }
+  const topApis = [...totals].map(([path, requests]) => ({ path, requests })).sort((a, b) => b.requests - a.requests).slice(0, 8);
+  const peak = Math.max(...timeOfDay), peakAt = timeOfDay.indexOf(peak);
+  const peakHour = peak ? `${String(peakAt).padStart(2, '0')}:00–${String((peakAt + 1) % 24).padStart(2, '0')}:00 UTC` : null;
+  return { total7d, hourly, topApis, peakHour, peakRequests: peak, timezone: 'UTC', trackingSince: 'Endpoint rankings start after analytics deployment.' };
+}
+
 export async function account(req, env, p, m) {
   if (p === '/api/music' && m === 'GET') return { success: true, tracks: await getTracks(env) };
   if (p === '/api/theme' && m === 'GET') return { success: true, ...(await getTheme(env)), accents: ACCENTS };
@@ -141,10 +167,12 @@ export async function account(req, env, p, m) {
     const c = await session(req, env);
     return { items: (await fs.query(env, 'coinHistory', 'uid', c.u.uid, 100)).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 30) };
   }
-  if (p.startsWith('/api/admin/')) {
+  if (p === '/api/insights' && m === 'GET') return await cached('public:api-insights', 60, () => usageAnalytics(env));
+    if (p.startsWith('/api/admin/')) {
     const c = await session(req, env);
     if (!c.isAdmin) throw new HttpError(403, 'Admin access required.');
     if (p === '/api/admin/overview') return { users: await fs.count(env, 'users'), ...(await rewardSettings(env)) };
+    if (p === '/api/admin/analytics' && m === 'GET') return await cached('admin:api-analytics', 30, () => usageAnalytics(env));
     if (p === '/api/admin/users' && m === 'GET') {
       const list = await fs.query(env, 'users', null, null, 100);
       return { items: list.map((u) => ({ uid: u.uid || u.id, email: u.email, coins: u.coins || 0, totalRequests: u.totalRequests || 0, createdAt: u.createdAt })).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')) };

@@ -111,8 +111,12 @@ export async function params(req, url) {
 
 // ---- stats: one atomic write per request, hourly buckets ----
 const hourId = (d = new Date()) => 'h' + d.toISOString().slice(0, 13).replace(/\D/g, '');
+// Firestore field paths cannot contain dots/slashes, so store each endpoint counter under a reversible hex key.
+const endpointStatField = (path) => 'api_' + Array.from(new TextEncoder().encode(path), (b) => b.toString(16).padStart(2, '0')).join('');
 async function record(env, { uid, path, status, ms, paid }) {
-  const ops = [{ inc: { doc: ['stats', hourId()], by: { req: 1, err: status >= 400 ? 1 : 0, ms: Math.round(ms) } } }];
+  const counters = { req: 1, err: status >= 400 ? 1 : 0, ms: Math.round(ms) };
+  counters[endpointStatField(path)] = 1;
+  const ops = [{ inc: { doc: ['stats', hourId()], by: counters } }];
   if (status < 400 && paid > 0) {
     ops.push({ inc: { doc: ['users', uid], by: { totalRequests: 1 } } });
     ops.push({ create: ['usage', { uid, endpoint: path, status: 'success', coins: paid, createdAt: stamp() }] });

@@ -51,16 +51,35 @@ export const ytPlayer = (id) => cached('dl:yt:' + id, 600, async () => {
   let blocked = null;
   for (const c of YT_CLIENTS) {
     try {
-      const r = await fetchT('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': c.ua, 'X-YouTube-Client-Name': c.id, 'X-YouTube-Client-Version': c.ver },
-        body: JSON.stringify({ videoId: id, contentCheckOk: true, racyCheckOk: true, context: { client: c.ctx } })
-      }, 9000);
+      // Retry only transient upstream failures. Never retry 403/429: respect YouTube access
+      // restrictions and rate limits instead of rotating identities or hammering the endpoint.
+      let r;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        r = await fetchT('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': c.ua, 'X-YouTube-Client-Name': c.id, 'X-YouTube-Client-Version': c.ver },
+          body: JSON.stringify({ videoId: id, contentCheckOk: true, racyCheckOk: true, context: { client: c.ctx } })
+        }, 9000);
+        if (r.status < 500 || attempt === 1) break;
+        await new Promise((resolve) => setTimeout(resolve, 350));
+      }
+      if (r.status === 403 || r.status === 429) {
+        const err = new HttpError(503, r.status === 429
+          ? 'YouTube rate-limited this request. Please wait and try again later.'
+          : 'YouTube refused this server request. This restriction cannot be bypassed from this Worker.');
+        err.code = 'YOUTUBE_ACCESS_RESTRICTED';
+        throw err;
+      }
       if (!r.ok) continue;
       const d = await r.json();
       if (d.playabilityStatus?.status === 'OK' && hasLinks(d)) return d;
-      if (d.playabilityStatus?.status === 'ERROR' || d.playabilityStatus?.status === 'UNPLAYABLE') return d; // real "not available": no need to try other clients
-      blocked = blocked || d; // LOGIN_REQUIRED (bot check) or no links: try the next client
-    } catch { /* next client */ }
+      if (d.playabilityStatus?.status === 'ERROR' || d.playabilityStatus?.status === 'UNPLAYABLE') return d;
+      if (d.playabilityStatus?.status === 'LOGIN_REQUIRED' || d.playabilityStatus?.status === 'AGE_CHECK_REQUIRED') {
+        const err = new HttpError(503, 'YouTube requires sign-in or age verification for this video.');
+        err.code = 'YOUTUBE_ACCESS_RESTRICTED';
+        throw err;
+      }
+      blocked = blocked || d;
+    } catch (e) { if (e?.code === 'YOUTUBE_ACCESS_RESTRICTED') throw e; /* next client on transient failure */ }
   }
   if (blocked) return blocked;
   throw new HttpError(502, 'YouTube is not answering right now.');
@@ -130,7 +149,10 @@ export async function youtube(p, env = {}) {
   const type = guard(p), id = ytId(p.url);
   const fallback = async () => { const f = await ytFallback(env, id, type); const o = out('youtube', f.title, type, f.ext, f.url); o.download.filesize = f.filesize || null; return o; };
   let d;
-  try { d = await ytPlayer(id); } catch { return fallback(); }
+  try { d = await ytPlayer(id); } catch (e) {
+    if (e?.code === 'YOUTUBE_ACCESS_RESTRICTED') throw e;
+    return fallback();
+  }
   const st = d.playabilityStatus?.status;
   if (st === 'ERROR' || st === 'UNPLAYABLE') throw new HttpError(404, 'Video not found or not available.');
   const sd = d.streamingData || {}, title = d.videoDetails?.title;

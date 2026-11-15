@@ -123,7 +123,7 @@ export async function count(env, col) {
 }
 export async function batchGet(env, col, ids) {
   const a = await call(env, 'POST', ':batchGet', { documents: ids.map((i) => docName(env, col, i)) });
-  return (a || []).filter((x) => x.found).map((x) => decode(x.found));
+  return (a || []).filter((x) => x.found).map((x) => ({ id: x.found.name.split('/').pop(), ...decode(x.found) }));
 }
 
 // Atomic writes in ONE request. ops: { inc: {doc:[col,id], by:{field:n}} } | { create:[col, obj] } | { createId:[col,id,obj] } | { merge:[col,id,obj] }

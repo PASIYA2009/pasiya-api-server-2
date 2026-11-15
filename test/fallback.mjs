@@ -7,7 +7,7 @@ const j = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: 
 let calls = [];
 globalThis.fetch = async (input, init = {}) => {
   const url = String(input?.url || input); calls.push(url);
-  if (url.includes('youtube.com/youtubei/v1/player')) return j({ playabilityStatus: { status: 'LOGIN_REQUIRED' } });
+  if (url.includes('youtube.com/youtubei/v1/player')) return j({ error: 'temporary upstream error' }, 502);
   if (url.includes('pipedapi.kavin.rocks/streams/')) return j({}, 500);
   if (url.includes('pipedapi.adminforge.de/streams/')) return j({ title: 'Mirror vid', videoStreams: [{ url: 'https://m/360.mp4', mimeType: 'video/mp4', quality: '360p', height: 360, videoOnly: false }, { url: 'https://m/720.mp4', mimeType: 'video/mp4', quality: '720p', height: 720, videoOnly: false }, { url: 'https://m/1080.mp4', mimeType: 'video/mp4', quality: '1080p', height: 1080, videoOnly: true }], audioStreams: [{ url: 'https://m/a.m4a', mimeType: 'audio/mp4', bitrate: 128000 }] });
   if (url.includes('api.apify.com')) {
@@ -39,4 +39,17 @@ let res = await ep('/api/social/instagram/hashtag').run({ tag: 'srilanka' }, { A
 ok('instagram hashtag uses Apify first', res.items[0].from === 'apify' && calls.every((c) => c.includes('apify')));
 res = await ep('/api/social/tiktok/comments').run({ url: 'https://www.tiktok.com/@a/video/1' }, { APIFY_TOKEN: 't' });
 ok('tiktok comments uses Apify first', res.items[0].from === 'apify');
+
+// Explicit YouTube access restrictions are surfaced and are not sent to mirror fallbacks.
+const beforeRestricted = calls.length;
+globalThis.fetch = async (input, init = {}) => {
+  const u = String(input?.url || input);
+  if (u.includes('youtube.com/youtubei/v1/player')) return j({ playabilityStatus: { status: 'LOGIN_REQUIRED' } });
+  calls.push(u);
+  return j({}, 500);
+};
+let restricted; try { await youtube({ ...P, url: 'https://youtu.be/zzzzzzzzzzz' }, {}); } catch (e) { restricted = e; }
+ok('login restriction is reported without fallback scraping', restricted?.code === 'YOUTUBE_ACCESS_RESTRICTED' && !calls.slice(beforeRestricted).some((u) => /piped|invidious|cobalt|apify/.test(u)));
+globalThis.fetch = dead;
+
 console.log(fail ? 'FAILED' : 'ALL PASSED'); process.exit(fail ? 1 : 0);

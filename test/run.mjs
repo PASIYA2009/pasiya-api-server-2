@@ -115,10 +115,13 @@ globalThis.fetch = async (input, init = {}) => {
   if (url.includes('facebook.com/watch')) return new Response('<meta property="og:video" content="https://cdn/fb.mp4"><meta property="og:title" content="FB &amp; post"><meta content="https://i/fb.jpg" property="og:image"><meta property="og:description" content="hello">');
   if (url.includes('instagram.com')) return new Response('<html>login wall</html>');
   if (url.includes('mediafire.com')) return new Response('<title>file.zip</title><a class="x" id="downloadButton" href="https://download123.mediafire.com/f/file.zip?a=1&amp;b=2">Download</a>');
+  if (url.includes('cinesubz.net/?s=')) return new Response('<html><a href="https://cinesubz.net/avatar-2026/"><img src="https://img.test/avatar.jpg"><h2>Avatar 2026</h2></a><a href="https://cinesubz.net/dune-2/">Dune 2</a></html>', { headers: { 'content-type': 'text/html' } });
+  if (url.includes('cinesubz.net/avatar-2026')) return new Response('<html><head><title>Avatar 2026 - CineSubz</title><meta property="og:title" content="Avatar 2026"><meta property="og:image" content="https://img.test/poster.jpg"><meta property="og:description" content="Sci-fi movie synopsis"></head><body><a href="https://cinesubz.net/links/avatar-720p/">Download 720p</a><a href="https://cinesubz.net/links/avatar-1080p/">Download 1080p</a></body></html>');
+  if (url.includes('cinesubz.net/links/avatar-720p')) return new Response('<html><title>Avatar 720p links</title><a href="https://files.example.test/avatar-720p.mkv">Download MKV</a><a href="https://files.example.test/avatar-720p.mkv">Mirror</a></html>');
   throw new Error('unmocked fetch ' + url);
 };
 
-const env = { FIREBASE_PROJECT_ID: 'p', FIREBASE_WEB_API_KEY: 'k', FIREBASE_SERVICE_ACCOUNT_JSON: SA, ADMIN_EMAIL: 'eshandinujaya86@gmail.com', SIGNUP_COINS: '10', GEMINI_API_KEY: 'g', OPENROUTER_API_KEY: 'o', PLATFORM_START: '2026-10-30T00:00:00Z' };
+const env = { FIREBASE_PROJECT_ID: 'p', FIREBASE_WEB_API_KEY: 'k', FIREBASE_SERVICE_ACCOUNT_JSON: SA, ADMIN_EMAIL: 'eshandinujaya86@gmail.com', SIGNUP_COINS: '10', GEMINI_API_KEY: 'g', OPENROUTER_API_KEY: 'o', PLATFORM_START: '2026-10-30T00:00:00Z', RATE_LIMIT_PER_MIN: '500' };
 const call = async (path, init = {}, e = env) => {
   for (const k of Object.keys(process.env)) if (/^(FIREBASE_|SIGNUP_|ALLOW_|ANON_|ADMIN_|GEMINI_|OPENROUTER_|GROQ_|DEEPSEEK_|TMDB_|CF_|SCRAPER_|CATBOX_|RATE_|PLATFORM_)/.test(k)) delete process.env[k];
   for (const [k, v] of Object.entries(e)) if (v !== undefined) process.env[k] = v;
@@ -189,10 +192,10 @@ r = await call('/api/me/coins'); ok('live coin endpoint needs login', r.s === 40
 for (let i = 0; i < 12; i++) await call(`/api/ai/gemini?apikey=${KEY}&prompt=hi`, {}, user2);
 r = await call(`/api/ai/gemini?apikey=${KEY}&prompt=hi`, {}, user2); ok('out of coins -> 402', r.s === 402, r);
 
-r = await call('/api/status', { headers: { 'x-forwarded-for': '1.2.3.4', 'x-vercel-id': 'sin1::abc' } }); ok('status shape', r.b.status === 'Online' && r.b.database.ok && r.b.requests24h > 5 && r.b.endpoints === 117 && r.b.categories === 9, r.b);
-r = await call('/api/catalog'); ok('catalog lists the public APIs', r.b.apis.length === 117, r.b.apis.length);
-r = await call('/api/catalog', {}, { ...env, SCRAPER_URL: 'https://s' }); ok('catalog same w/ SCRAPER_URL', r.b.apis.length === 117, r.b.apis.length);
-r = await call('/api/catalog', {}, { ...env, APIFY_TOKEN: 'x', TAVILY_API_KEY: 'x' }); ok('social (Apify) + Tavily APIs appear only when their key is set', r.b.apis.length === 117 + 1 && r.b.apis.some((a) => a.path === '/api/social/tiktok/profile'), r.b.apis.length);
+r = await call('/api/status', { headers: { 'x-forwarded-for': '1.2.3.4', 'x-vercel-id': 'sin1::abc' } }); ok('status shape', r.b.status === 'Online' && r.b.database.ok && r.b.requests24h > 5 && r.b.endpoints === 123 && r.b.categories === 10, r.b);
+r = await call('/api/catalog'); ok('catalog lists the public APIs', r.b.apis.length === 123, r.b.apis.length);
+r = await call('/api/catalog', {}, { ...env, SCRAPER_URL: 'https://s' }); ok('catalog same w/ SCRAPER_URL', r.b.apis.length === 123, r.b.apis.length);
+r = await call('/api/catalog', {}, { ...env, APIFY_TOKEN: 'x', TAVILY_API_KEY: 'x' }); ok('social (Apify) + Tavily APIs appear only when their key is set', r.b.apis.length === 123 + 1 && r.b.apis.some((a) => a.path === '/api/social/tiktok/profile'), r.b.apis.length);
 r = await call('/api/load'); ok('Cloudflare load metrics unavailable by platform design', r.s === 200 && r.b.server.ramUsedMb === null && r.b.server.cpuPct === null, r.b);
 r = await call('/api/daily-claim', { method: 'POST', ...auth }, user2); ok('daily claim', r.s === 200, r);
 r = await call('/api/daily-claim', { method: 'POST', ...auth }, user2); ok('daily claim twice 409', r.s === 409, r);
@@ -229,12 +232,23 @@ r = await D('facebook', 'https://www.facebook.com/watch/?v=123'); ok('keyless fa
 r = await D('instagram', 'https://www.instagram.com/reel/abc/'); ok('instagram login wall -> 404', r.s === 404, r);
 r = await D('youtube', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'); ok('keyless youtube video (skips ciphered format)', r.s === 200 && r.b.result.download.url === 'https://gv/18' && r.b.result.download.title === 'Rick Roll', r);
 r = await D('youtube', 'https://youtu.be/dQw4w9WgXcQ', '&type=audio'); ok('keyless youtube audio', r.s === 200 && r.b.result.download.url === 'https://gv/140' && r.b.result.download.filesize === 999, r);
-r = await D('youtube', 'https://www.youtube.com/watch?v=LOGINNEEDED'); ok('youtube bot check -> clear 503', r.s === 503 && /SCRAPER_URL/.test(r.b.error), r);
+r = await D('youtube', 'https://www.youtube.com/watch?v=LOGINNEEDED'); ok('youtube sign-in restriction -> clear 503', r.s === 503 && /requires sign-in/.test(r.b.error), r);
 r = await D('youtube', 'https://evil.example/watch?v=dQw4w9WgXcQ'); ok('download wrong host -> 400', r.s === 400, r);
-for (const dead of ['cinesubz/search', 'cinesubz/details', 'cinesubz/links', 'sinhalasub/search', 'sinhalasub/details', 'sinhalasub/direct']) { r = await call(`/api/scraper/${dead}?apikey=${KEY}&query=x`, {}, user3); ok(`removed: ${dead} -> 404`, r.s === 404, r); }
-r = await call('/api/catalog'); ok('catalog has no movie-piracy entries', !JSON.stringify(r.b).match(/cinesubz|sinhalasub/i), 'found');
+for (const dead of ['sinhalasub/search', 'sinhalasub/details', 'sinhalasub/direct']) { r = await call(`/api/scraper/${dead}?apikey=${KEY}&query=x`, {}, user3); ok(`legacy removed: ${dead} -> 404`, r.s === 404, r); }
+r = await call(`/api/cinesubz/search?q=Avatar&apikey=${KEY}`); ok('CineSubz search returns movie results', r.s === 200 && r.b.result.count === 2 && r.b.result.results[0].title === 'Avatar 2026', r);
+r = await call(`/api/cinesubz/details?url=${encodeURIComponent('https://cinesubz.net/avatar-2026/')}&apikey=${KEY}`); ok('CineSubz details returns metadata + link pages', r.s === 200 && r.b.result.result.title === 'Avatar 2026' && r.b.result.result.poster === 'https://img.test/poster.jpg' && r.b.result.result.downloadLinks.length === 2, r);
+r = await call(`/api/cinesubz/download?url=${encodeURIComponent('https://cinesubz.net/links/avatar-720p/')}&apikey=${KEY}`); ok('CineSubz download lists public file links', r.s === 200 && r.b.result.result.count === 1 && r.b.result.result.links[0].url === 'https://files.example.test/avatar-720p.mkv', r);
+r = await call(`/api/cinesubz/details?url=${encodeURIComponent('https://evil.example/avatar/')}&apikey=${KEY}`); ok('CineSubz rejects unrelated host', r.s === 400, r);
+r = await call('/api/catalog'); ok('catalog includes CineSubz API endpoints', JSON.stringify(r.b).includes('/api/cinesubz/search') && JSON.stringify(r.b).includes('/api/cinesubz/details') && JSON.stringify(r.b).includes('/api/cinesubz/download'), 'missing');
 r = await call('/api/admin/overview', auth); ok('admin overview', r.s === 200 || r.s === 503, r); // count aggregation not mocked
 r = await call('/api/admin/overview', auth, user2); ok('non-admin blocked from admin 403', r.s === 403, r);
+// Analytics counters are stored in hourly stats docs and only visible to admins.
+const analyticsHour = 'h' + new Date().toISOString().slice(0, 13).replace(/\D/g, '');
+const weatherField = 'api_' + Array.from(new TextEncoder().encode('/api/weather'), (b) => b.toString(16).padStart(2, '0')).join('');
+db.set('stats/' + analyticsHour, { req: { integerValue: '17' }, err: { integerValue: '1' }, ms: { integerValue: '340' }, [weatherField]: { integerValue: '12' } });
+r = await call('/api/admin/analytics', auth); ok('admin analytics: real hourly totals + top API decoded', r.s === 200 && r.b.total7d === 17 && r.b.hourly.some((x) => x.requests === 17) && r.b.topApis[0]?.path === '/api/weather' && r.b.topApis[0]?.requests === 12, r.b);
+r = await call('/api/insights'); ok('public insights: visible without login', r.s === 200 && r.b.topApis[0]?.path === '/api/weather' && r.b.total7d === 17, r.b);
+r = await call('/api/admin/analytics', auth, user2); ok('admin analytics blocked for normal users', r.s === 403, r);
 
 // ---- admin: settings, grant coins, user list -------------------------------------------------
 const jb = (o) => ({ method: 'POST', headers: { Authorization: 'Bearer x', 'content-type': 'application/json' }, body: JSON.stringify(o) });

@@ -173,6 +173,17 @@ input:focus{border-color:var(--primary)}
 .chip.ok{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,var(--line))}.chip.fail{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}.chip.warn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}.chip.skip{color:var(--muted);border-color:var(--line)}
 #hcMsg,#featMsg{min-height:2.8em}
 #apiRows{max-height:460px;overflow:auto;overflow-anchor:none}#apiRows .rowi{align-items:flex-start}#apiRows .rowi>span:first-child{min-width:0}
+/* Premium admin analytics */
+.analytics-wrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:14px;margin:14px 0 20px}
+.analytics-card{min-width:0;border:1px solid var(--line);border-radius:18px;padding:17px;background:linear-gradient(145deg,color-mix(in srgb,var(--panel) 96%,white 4%),var(--panel));box-shadow:0 12px 34px #00000018}
+.analytics-card h3{font-size:14px;margin:0;color:var(--head);letter-spacing:.01em}.analytics-sub{font-size:11px;color:var(--muted);margin:5px 0 14px}
+.analytics-total{font:700 25px var(--mono);color:var(--head);letter-spacing:-1px}.analytics-bars{height:154px;display:flex;align-items:end;gap:4px;padding:10px 0 0;border-bottom:1px solid var(--line)}
+.analytics-bar{flex:1;min-width:3px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 35%,transparent));opacity:.88;transition:height .3s ease}.analytics-bar:hover{opacity:1;filter:brightness(1.18)}
+.analytics-axis{display:flex;justify-content:space-between;color:var(--muted);font:10px var(--mono);padding-top:8px}
+.top-api-list{display:grid;gap:12px}.top-api-row{display:grid;grid-template-columns:minmax(0,1fr) 42px;gap:6px;align-items:center}.top-api-name{font-size:11px;color:var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top-api-value{text-align:right;font:11px var(--mono);color:var(--muted)}.top-api-track{height:6px;border-radius:99px;background:var(--line);overflow:hidden;grid-column:1/-1}.top-api-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),#42d6bd)}
+.analytics-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.analytics-chip{border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:10px;color:var(--muted)}.analytics-chip b{color:var(--head)}.analytics-empty{padding:25px 8px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:760px){.analytics-wrap{grid-template-columns:1fr}.analytics-card{padding:14px}.analytics-bars{height:130px}}
+
 @media(max-width:1000px){.api-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){
   .layout{grid-template-columns:1fr}
@@ -230,6 +241,15 @@ body{background:transparent!important}body::before{display:none}
     </div>
     <div class="live"><span class="pulse" id="livePulse"></span><span class="t">LIVE SYSTEM STATUS</span></div>
     <div class="stats" id="statusGrid" aria-live="polite"></div>
+    <section class="panel" id="publicInsights" aria-labelledby="publicInsightsTitle">
+      <div class="eyebrow">COMMUNITY ACTIVITY</div>
+      <div class="panel-head"><h2 id="publicInsightsTitle">Popular APIs &amp; usage trends</h2><span class="pill">LIVE INSIGHTS</span></div>
+      <div class="analytics-wrap">
+        <div class="analytics-card"><h3>Busy hours · last 24 hours</h3><p class="analytics-sub">Requests by hour · UTC</p><div class="analytics-total" id="publicInsightsTotal">—</div><div class="analytics-bars" id="publicInsightsHours"><div class="analytics-empty">Loading activity…</div></div><div class="analytics-axis"><span>24h ago</span><span>12h ago</span><span>Now</span></div></div>
+        <div class="analytics-card"><h3>Most-used APIs · 7 days</h3><p class="analytics-sub">Community-wide request ranking</p><div class="top-api-list" id="publicInsightsTop"><div class="analytics-empty">Loading popular APIs…</div></div><div class="analytics-meta" id="publicInsightsMeta"></div></div>
+      </div>
+      <p class="muted" id="publicInsightsNote">Usage trends update as people use the APIs.</p>
+    </section>
 
     <div class="columns" id="rewards" hidden>
       <div class="panel" id="dailyPanel" hidden>
@@ -274,6 +294,13 @@ body{background:transparent!important}body::before{display:none}
   </section>
 
   <section class="panel" id="admin" hidden>
+    <div class="eyebrow">LIVE PLATFORM INSIGHTS</div>
+    <div class="panel-head"><h2>API usage analytics</h2><button class="btn sm" id="refreshAnalytics">Refresh stats</button></div>
+    <div class="analytics-wrap" id="analyticsPanel">
+      <div class="analytics-card"><h3>Traffic · last 24 hours</h3><p class="analytics-sub">Hourly request volume · UTC</p><div class="analytics-total" id="analyticsTotal">—</div><div class="analytics-bars" id="analyticsHours"><div class="analytics-empty">Loading analytics…</div></div><div class="analytics-axis"><span>24h ago</span><span>12h ago</span><span>Now</span></div></div>
+      <div class="analytics-card"><h3>Most-used APIs · 7 days</h3><p class="analytics-sub">Ranked by real requests received</p><div class="top-api-list" id="analyticsTop"><div class="analytics-empty">Loading analytics…</div></div><div class="analytics-meta" id="analyticsMeta"></div></div>
+    </div>
+    <p class="muted" id="analyticsNote">Real usage data is collected after this update is deployed.</p>
     <div class="eyebrow">ADMIN CONTROL CENTER</div>
     <div class="panel-head"><h2>Coin management</h2><span class="pill">UNLIMITED ADMIN COINS</span></div>
     <p class="muted" id="adminOverview">Give coins to any registered user by their email.</p>
@@ -442,8 +469,27 @@ async function loadLive() {
     lastStatus.server = v;
   } catch { /* next tick retries */ } finally { loadBusy = false; }
 }
+let publicInsightsLoaded = false, publicInsightsAt = 0;
+async function loadPublicInsights(force = false) {
+  if (publicInsightsLoaded && !force && Date.now() - publicInsightsAt < 60000) return;
+  publicInsightsLoaded = true;
+  try {
+    const r = await fetch('/api/insights', { cache: 'no-store' }), d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Insights unavailable');
+    $('#publicInsightsTotal').textContent = fmtNum(d.total7d) + ' requests / 7 days';
+    const max = Math.max(1, ...(d.hourly || []).map((x) => Number(x.requests || 0)));
+    $('#publicInsightsHours').innerHTML = (d.hourly || []).map((x) => { const v = Number(x.requests || 0), h = Math.max(v ? 5 : 2, v / max * 100); return `<div class="analytics-bar" style="height:${h}%" title="${esc(x.label)} · ${fmtNum(v)} requests"></div>`; }).join('') || '<div class="analytics-empty">No activity yet</div>';
+    const maxApi = Math.max(1, ...(d.topApis || []).map((x) => Number(x.requests || 0)));
+    $('#publicInsightsTop').innerHTML = (d.topApis || []).length ? d.topApis.map((x, i) => `<div class="top-api-row"><div class="top-api-name" title="${esc(x.path)}">${i + 1}. ${esc(x.path.replace(/^\/api\//, ''))}</div><div class="top-api-value">${fmtNum(x.requests)}</div><div class="top-api-track"><div class="top-api-fill" style="width:${Math.max(2, Number(x.requests) / maxApi * 100)}%"></div></div></div>`).join('') : '<div class="analytics-empty">No usage data yet. Rankings will appear after APIs receive requests.</div>';
+    $('#publicInsightsMeta').innerHTML = `<span class="analytics-chip">Busiest time <b>${esc(d.peakHour || 'Collecting data')}</b></span><span class="analytics-chip">Peak hour <b>${fmtNum(d.peakRequests)} calls</b></span>`;
+    $('#publicInsightsNote').textContent = 'Community-wide real request counts. API rankings start accumulating after this version is deployed.';
+    publicInsightsAt = Date.now();
+  } catch (e) { publicInsightsLoaded = false; $('#publicInsightsNote').textContent = e.message; }
+}
+
 async function loadStatus() {
   if (document.hidden) return;
+  loadPublicInsights();
   await measurePing();
   try { lastStatus = await (await fetch('/api/status', { cache: 'no-store' })).json(); renderStatus(lastStatus); }
   catch { $('#livePulse').className = 'pulse bad'; if (!lastStatus) renderStatus(null); }
@@ -602,7 +648,7 @@ async function refreshAll() {
     $$('[data-rev]').forEach((b) => (b.onclick = async () => { if (!confirm('Revoke this key? Apps using it will stop working.')) return; try { await authed('/api/keys/revoke', { method: 'POST', body: JSON.stringify({ id: b.dataset.rev }) }); toast('Key revoked'); refreshAll(); } catch (e) { toast(e.message); } }));
     $('#usageList').innerHTML = (us.items || []).map((x) => rowHtml(x.endpoint, `−${x.coins} · ${new Date(x.createdAt).toLocaleString()}`)).join('') || '<div class="muted">No paid calls yet.</div>';
     $('#coinList').innerHTML = (ch.items || []).map((x) => rowHtml(x.reason, `${x.amount > 0 ? '+' : ''}${x.amount} → ${x.balance}`)).join('') || '<div class="muted">No coin changes yet.</div>';
-    if (me.role === 'admin') { loadFeatures(); loadAdminMusic(); loadAdminTheme(); try { const o = await authed('/api/admin/overview'); $('#adminOverview').textContent = `Registered users: ${o.users}. Give coins to any registered user by their email.`; if (document.activeElement !== $('#setDaily')) $('#setDaily').value = o.dailyCoins; if (document.activeElement !== $('#setSpin')) $('#setSpin').value = o.spinMax; } catch {} }
+    if (me.role === 'admin') { loadFeatures(); loadAdminMusic(); loadAdminTheme(); loadAnalytics(); try { const o = await authed('/api/admin/overview'); $('#adminOverview').textContent = `Registered users: ${o.users}. Give coins to any registered user by their email.`; if (document.activeElement !== $('#setDaily')) $('#setDaily').value = o.dailyCoins; if (document.activeElement !== $('#setSpin')) $('#setSpin').value = o.spinMax; } catch {} }
   } catch (e) { toast(e.message); }
 }
 $('#newKey').onclick = async () => { try { const d = await authed('/api/keys', { method: 'POST', body: '{}' }); showKey(d.key); refreshAll(); } catch (e) { toast(e.message); } };
@@ -618,6 +664,22 @@ $('#spinBtn').onclick = async () => {
     setTimeout(async () => { S.spinning = false; await refreshAll(); $('#spinMsg').textContent = d.message; toast(d.message); }, 3300);
   } catch (e) { S.spinning = false; renderUser(); $('#spinMsg').textContent = e.message; }
 };
+async function loadAnalytics() {
+  const total = $('#analyticsTotal'), bars = $('#analyticsHours'), top = $('#analyticsTop');
+  if (!total || !bars || !top) return;
+  try {
+    const d = await authed('/api/admin/analytics');
+    total.textContent = fmtNum(d.total7d) + ' requests';
+    const max = Math.max(1, ...(d.hourly || []).map((x) => Number(x.requests || 0)));
+    bars.innerHTML = (d.hourly || []).map((x) => { const v = Number(x.requests || 0), h = Math.max(v ? 5 : 2, v / max * 100); return `<div class="analytics-bar" style="height:${h}%" title="${esc(x.label)} · ${fmtNum(v)} requests"></div>`; }).join('') || '<div class="analytics-empty">No request data yet</div>';
+    const maxApi = Math.max(1, ...(d.topApis || []).map((x) => Number(x.requests || 0)));
+    top.innerHTML = (d.topApis || []).length ? d.topApis.map((x, i) => `<div class="top-api-row"><div class="top-api-name" title="${esc(x.path)}">${i + 1}. ${esc(x.path.replace(/^\/api\//, ''))}</div><div class="top-api-value">${fmtNum(x.requests)}</div><div class="top-api-track"><div class="top-api-fill" style="width:${Math.max(2, Number(x.requests) / maxApi * 100)}%"></div></div></div>`).join('') : '<div class="analytics-empty">No endpoint stats yet. New calls will appear here.</div>';
+    $('#analyticsMeta').innerHTML = `<span class="analytics-chip">Peak hour <b>${esc(d.peakHour || '—')}</b></span><span class="analytics-chip">Peak traffic <b>${fmtNum(d.peakRequests)} calls</b></span>`;
+    $('#analyticsNote').textContent = 'Counts are based on real requests recorded by this server. Endpoint ranking begins after this update is deployed; older endpoint totals are not backfilled.';
+  } catch (e) { total.textContent = 'Unavailable'; bars.innerHTML = '<div class="analytics-empty">' + esc(e.message) + '</div>'; top.innerHTML = ''; }
+}
+$('#refreshAnalytics')?.addEventListener('click', loadAnalytics);
+
 $('#adminGo').onclick = async () => {
   const email = $('#adminEmail').value.trim().toLowerCase(), amount = Number($('#adminAmount').value);
   if (!email || !Number.isInteger(amount) || !amount) { $('#adminMsg').textContent = 'Enter the user email and a whole number of coins (not 0).'; return; }
