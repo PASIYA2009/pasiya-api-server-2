@@ -209,8 +209,10 @@ body{background:transparent!important}body::before{display:none}
 .card,.panel{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-color:rgba(var(--a-rgb),.16)}
 .card:hover{border-color:rgba(var(--a-rgb),.38)}
 </style>
-<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{var d=document.documentElement,L=localStorage,a=L.getItem("pasiya_accent")||L.getItem("pasiya_def_accent");d.dataset.accent=a||"blue";if(!a){var s=document.createElement("style");s.textContent="html.ps-wait body{opacity:0!important}";document.head.appendChild(s);d.classList.add("ps-wait");var f=function(){d.classList.remove("ps-wait")},c=window.AbortController?new AbortController():null,t=setTimeout(function(){f();c&&c.abort()},1500);fetch("/api/theme",{cache:"no-store",signal:c&&c.signal}).then(function(r){return r.json()}).then(function(j){if(j&&j.accent){d.dataset.accent=j.accent;try{L.setItem("pasiya_def_accent",j.accent)}catch(e){}}}).catch(function(){}).then(function(){clearTimeout(t);f()})}}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script></head>
+<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><link rel="stylesheet" href="/loader.css"><link rel="stylesheet" href="/server-hero.css"><script>try{var d=document.documentElement,L=localStorage,a=L.getItem("pasiya_accent")||L.getItem("pasiya_def_accent");d.dataset.accent=a||"blue";if(!a){var s=document.createElement("style");s.textContent="html.ps-wait body{opacity:0!important}";document.head.appendChild(s);d.classList.add("ps-wait");var f=function(){d.classList.remove("ps-wait")},c=window.AbortController?new AbortController():null,t=setTimeout(function(){f();c&&c.abort()},1500);fetch("/api/theme",{cache:"no-store",signal:c&&c.signal}).then(function(r){return r.json()}).then(function(j){if(j&&j.accent){d.dataset.accent=j.accent;try{L.setItem("pasiya_def_accent",j.accent)}catch(e){}}}).catch(function(){}).then(function(){clearTimeout(t);f()})}}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script></head>
 <body>
+<div class="ps-loader" id="ps-loader"><div class="ps-orb"><i></i><i></i><i></i><b>P</b></div><div class="ps-brand">PASIYA API</div><div class="ps-sub">Loading</div><div class="ps-bar"><span></span></div></div>
+<script>(function(){var l=document.getElementById('ps-loader'),t=Date.now();function h(){if(!l)return;var w=Math.max(0,2200-(Date.now()-t));setTimeout(function(){l.classList.add('ps-hide')},w)}if(document.readyState==='complete')h();else addEventListener('load',h);setTimeout(h,7000)})();</script>
 <div hidden id="legacyStubs" aria-hidden="true">
   <button id="themeBtn"></button><a id="regTop"></a><a id="loginTop"></a><button id="userBtn"></button><button id="menuBtn"></button><button id="menuClose"></button><div id="drawerBack"></div><div id="sideMenu"></div>
   <div class="me-chip" id="meChip"><span class="dot"></span><span id="meChipText"></span><b id="meChipCoins"></b></div>
@@ -235,7 +237,8 @@ body{background:transparent!important}body::before{display:none}
 <main class="main">
   <div class="banner" id="verifyBanner" hidden><span id="verifyText">Verify your email to unlock the Admin Panel.</span><span class="btn-row"><button class="btn sm primary" id="resendVerify">Send verification email</button><button class="btn sm" id="iVerified">I verified, refresh</button></span></div>
   <section id="overview">
-    <div class="welcome">
+    <div class="srv-hero" aria-hidden="true"><div class="srv-float"><svg viewBox="0 0 200 190" aria-hidden="true"><rect class="srv-unit" x="6" y="6" width="188" height="52" rx="10"/><line class="srv-slot" x1="26" y1="24" x2="104" y2="24"/><line class="srv-slot" x1="26" y1="40" x2="84" y2="40"/><circle class="srv-led " cx="150" cy="32" r="4.5"/><circle class="srv-led b" cx="168" cy="32" r="4.5"/><rect class="srv-unit" x="6" y="68" width="188" height="52" rx="10"/><line class="srv-slot" x1="26" y1="86" x2="104" y2="86"/><line class="srv-slot" x1="26" y1="102" x2="84" y2="102"/><circle class="srv-led c" cx="150" cy="94" r="4.5"/><circle class="srv-led " cx="168" cy="94" r="4.5"/><rect class="srv-unit" x="6" y="130" width="188" height="52" rx="10"/><line class="srv-slot" x1="26" y1="148" x2="104" y2="148"/><line class="srv-slot" x1="26" y1="164" x2="84" y2="164"/><circle class="srv-led d" cx="150" cy="156" r="4.5"/><circle class="srv-led b" cx="168" cy="156" r="4.5"/></svg></div><div class="srv-shadow"></div><i class="srv-dot"></i><i class="srv-dot"></i><i class="srv-dot"></i><i class="srv-dot"></i></div>
+  <div class="welcome">
       <div><div class="eyebrow">DEVELOPER CONSOLE / OVERVIEW</div><h1>Welcome to PASIYA API</h1><div class="muted">Sri Lanka news, search, utilities, weather, AI and more. One free API key for everything.</div></div>
       <span class="pill warn" id="accountState">GUEST</span>
     </div>
@@ -381,6 +384,7 @@ body{background:transparent!important}body::before{display:none}
 </div>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="/server-hero.js" defer></script>
 <script type="module">
 const FIREBASE = { apiKey: 'AIzaSyCPZAmh7zUmU24aRtDvhGKXydh8DCDSaxk', authDomain: 'pasiya-api.firebaseapp.com', projectId: 'pasiya-api', storageBucket: 'pasiya-api.firebasestorage.app', messagingSenderId: '1074532195422', appId: '1:1074532195422:web:3a1f26e066ad5165e3a8cf' };
 const $ = (s, r = document) => r.querySelector(s);
