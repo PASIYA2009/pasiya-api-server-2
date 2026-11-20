@@ -386,6 +386,7 @@ const FIREBASE = { apiKey: 'AIzaSyCPZAmh7zUmU24aRtDvhGKXydh8DCDSaxk', authDomain
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+try { localStorage.removeItem('pasiya_key'); } catch {}
 const store = { get: (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
 const S = { user: null, fb: null, catalog: [], cat: 'All', q: '', me: null, def: null, tab: 'res', pings: [], spinDeg: 0 };
 
@@ -526,7 +527,8 @@ async function loadCatalog() {
 
 // test terminal
 const termValues = () => { const v = {}; $$('#tParams input').forEach((i) => { if (i.value.trim()) v[i.dataset.n] = i.value.trim(); }); return v; };
-function buildUrl(withKey) { const u = new URL(S.def.path, location.origin); for (const [k, v] of Object.entries(termValues())) u.searchParams.set(k, v); if (withKey) u.searchParams.set('apikey', $('#tKey').value.trim() || 'YOUR_API_KEY'); return u.toString(); }
+function termKey() { return S.user ? ($('#tKey').value.trim() || S.key || '') : ''; }
+function buildUrl(withKey) { const u = new URL(S.def.path, location.origin); for (const [k, v] of Object.entries(termValues())) u.searchParams.set(k, v); if (withKey) u.searchParams.set('apikey', termKey() || 'YOUR_API_KEY'); return u.toString(); }
 const curlText = () => `curl -X GET "${buildUrl(true)}"`;
 const fetchText = () => `fetch("${buildUrl(true)}")\n  .then(res => res.json())\n  .then(console.log);`;
 function setOut(t, err) { const o = $('#tOut'); o.textContent = t; o.classList.toggle('err', !!err); }
@@ -535,13 +537,20 @@ function openTerm(def) {
   S.def = def; S.tab = 'res'; S.lastRes = ''; S.lastErr = false;
   $('#termTitle').textContent = 'Terminal — ' + def.name; $('#tName').textContent = def.name; $('#tPath').textContent = 'GET / POST  ·  ' + def.path;
   $('#tParams').innerHTML = def.params.length ? def.params.map((p) => `<div class="field"><label for="p_${esc(p.name)}">${esc(p.name)}${p.required ? ' <b>*</b>' : ''}</label><input id="p_${esc(p.name)}" data-n="${esc(p.name)}" class="mono" value="${esc(p.example)}" placeholder="${esc(p.desc)}" autocomplete="off"></div>`).join('') : '<p class="muted">This API takes no parameters.</p>';
-  $('#tKey').value = store.get('pasiya_key');
-  $('#tKeyHelp').textContent = S.user ? 'Signed in: leave this empty and the test uses your login.' : 'Paste your API key or sign in to test.';
+  termLock();
   $$('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === 'res'));
   setOut('$ ready'); termRefresh(); openModal('#termModal');
   $$('#tParams input').forEach((i) => (i.oninput = termRefresh));
 }
-$('#tKey').oninput = () => { store.set('pasiya_key', $('#tKey').value.trim()); termRefresh(); };
+// Guests: no key is shown or accepted, and Run is locked until they log in.
+function termLock() {
+  const inn = !!S.user, k = $('#tKey'), run = $('#tRun');
+  k.disabled = !inn; k.value = inn ? (S.key || '') : '';
+  k.placeholder = inn ? 'Your API key (leave empty to use your login)' : 'Log in to see your API key';
+  $('#tKeyHelp').innerHTML = inn ? 'Signed in: leave this empty and the test uses your login.' : '🔒 You must <a href="/login?next=/" style="text-decoration:underline">log in</a> or <a href="/register?next=/" style="text-decoration:underline">register</a> to test APIs and get your API key.';
+  run.disabled = !inn; run.title = inn ? '' : 'Log in to test APIs';
+}
+$('#tKey').oninput = () => { termRefresh(); };
 $$('.tabs button').forEach((b) => (b.onclick = () => { S.tab = b.dataset.tab; $$('.tabs button').forEach((x) => x.classList.toggle('on', x === b)); if (S.tab === 'res') setOut(S.lastRes || '$ ready', S.lastErr); else termRefresh(); }));
 $('#tCopyCurl').onclick = () => copy(curlText(), 'cURL copied');
 $('#tCopyUrl').onclick = () => copy(buildUrl(true), 'URL copied');
@@ -551,14 +560,15 @@ $('#tRun').onclick = async () => {
   if (miss) { setOut(`"${miss.name}" is required.`, true); return; }
   const btn = $('#tRun'); btn.disabled = true; S.tab = 'res'; $$('.tabs button').forEach((x) => x.classList.toggle('on', x.dataset.tab === 'res')); setOut('$ running…');
   try {
+    if (!S.user) throw new Error('Please log in first. Testing APIs needs a login.');
     const key = $('#tKey').value.trim(), headers = {};
-    if (key) headers['X-API-Key'] = key; else if (S.user) headers.Authorization = 'Bearer ' + (await S.user.getIdToken()); else throw new Error('Paste your API key or sign in first.');
+    if (key) headers['X-API-Key'] = key; else headers.Authorization = 'Bearer ' + (await S.user.getIdToken());
     const t = performance.now(), r = await fetch(buildUrl(false), { headers });
     const d = await r.json().catch(() => ({ error: 'Server did not return JSON (HTTP ' + r.status + ').' }));
     S.lastRes = JSON.stringify(d, null, 2) + `\n\n// HTTP ${r.status} · ${Math.round(performance.now() - t)} ms`; S.lastErr = !r.ok; setOut(S.lastRes, S.lastErr);
     if (S.user) refreshMe();
   } catch (e) { S.lastRes = e.message; S.lastErr = true; setOut(e.message, true); }
-  btn.disabled = false;
+  btn.disabled = !S.user;
 };
 
 // auth
@@ -566,7 +576,7 @@ async function initAuth() {
   try {
     const [{ initializeApp }, A] = await Promise.all([import('https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js'), import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js')]);
     S.fb = A; S.auth = A.getAuth(initializeApp(FIREBASE));
-    A.onAuthStateChanged(S.auth, async (u) => { S.user = u; if (!u) S.me = null; renderUser(); if (u) { closeModals(); await ensureKey(); await refreshAll(); } });
+    A.onAuthStateChanged(S.auth, async (u) => { S.user = u; if (!u) { S.me = null; S.key = ''; try { localStorage.removeItem('pasiya_key'); } catch {} $('#keyReveal').hidden = true; $('#keyValue').textContent = ''; } renderUser(); termLock(); if (u) { closeModals(); await ensureKey(); await refreshAll(); } });
   } catch { $('#authMsg').textContent = 'Sign-in could not load. Check your connection and reload.'; renderUser(); }
 }
 const authMsg = (t, cls = 'bad') => { const m = $('#authMsg'); m.textContent = t; m.className = 'msg ' + cls; };
@@ -597,7 +607,7 @@ $('#forgotBtn').onclick = () => doAuth(async () => {
 });
 $('#resendVerify').onclick = async () => { try { await S.fb.sendEmailVerification(S.user); toast('Verification email sent'); } catch (e) { toast(friendly(e)); } };
 $('#iVerified').onclick = async () => { try { await S.user.reload(); await S.user.getIdToken(true); await refreshAll(); toast(S.me?.role === 'admin' ? 'Admin unlocked' : 'Still not verified'); } catch (e) { toast(friendly(e)); } };
-$('#logoutBtn').onclick = async () => { $('#userPop').hidden = true; await S.fb.signOut(S.auth); toast('Signed out'); };
+$('#logoutBtn').onclick = async () => { $('#userPop').hidden = true; S.key = ''; try { localStorage.removeItem('pasiya_key'); } catch {} await S.fb.signOut(S.auth); toast('Signed out'); };
 
 const WHEEL_COLORS = ['var(--primary)', '#1e3a8a', 'var(--violet)', '#d97706', '#e11d48'];
 function drawWheel(rewards) {
@@ -629,13 +639,13 @@ function renderUser() {
   $('#claimMsg').textContent = !u ? 'Sign in to claim your reward.' : me?.lastDailyClaim === day ? 'Already claimed today. Come back tomorrow.' : 'Ready to claim.';
   if (!S.spinning) $('#spinMsg').textContent = !u ? 'Sign in to spin.' : spun ? 'Already spun today. Come back tomorrow.' : 'Your spin is ready.';
 }
-async function ensureKey() { try { const d = await authed('/api/keys/ensure', { method: 'POST', body: '{}' }); if (d.key) store.set('pasiya_key', d.key); if (d.created) toast('Your API key was created automatically'); } catch (e) { toast(e.message); } }
+async function ensureKey() { try { const d = await authed('/api/keys/ensure', { method: 'POST', body: '{}' }); if (d.key) S.key = d.key; if (d.created) toast('Your API key was created automatically'); } catch (e) { toast(e.message); } }
 async function refreshMe() { try { S.me = await authed('/api/me'); renderUser(); window.PS?.setMe?.({ ...S.me }); } catch {} }
 // live coins: the shared shell (/shell.js) polls the server and tells the dashboard when the balance changed
 document.addEventListener('ps:coins', (e) => { if (S.me && S.me.role !== 'admin') { S.me.coins = e.detail.coins; renderUser(); } });
 
 // account data
-function showKey(k) { store.set('pasiya_key', k); $('#keyReveal').hidden = false; $('#keyValue').textContent = k; $('#copyKey').onclick = () => copy(k, 'Key copied'); }
+function showKey(k) { S.key = k; $('#keyReveal').hidden = false; $('#keyValue').textContent = k; $('#copyKey').onclick = () => copy(k, 'Key copied'); }
 const rowHtml = (a, b) => `<div class="rowi"><span>${esc(a)}</span><span>${b}</span></div>`;
 async function refreshAll() {
   if (!S.user) return;

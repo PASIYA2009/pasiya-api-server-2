@@ -157,7 +157,7 @@
     });
   }
   D.addEventListener('click', function (e) {
-    if (e.target.closest && e.target.closest('[data-ps-signout]') && P.auth) P.A.signOut(P.auth).then(function () { location.reload(); });
+    if (e.target.closest && e.target.closest('[data-ps-signout]') && P.auth) try { localStorage.removeItem('pasiya_key'); } catch (e) {} P.A.signOut(P.auth).then(function () { location.reload(); });
     var a = e.target.closest && e.target.closest('a[data-ps-x]');
     if (a && P.user && P.auth && P.auth.currentUser) { e.preventDefault(); handoff(a.href); }
   });
@@ -225,7 +225,7 @@
     Promise.all([import('https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js'), import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js')]).then(function (m) {
       var A = m[1]; P.A = A; P.auth = A.getAuth(m[0].initializeApp(FB));
       var first = true;
-      A.onAuthStateChanged(P.auth, function (u) {
+      A.onAuthStateChanged(P.auth, function (u) { if (!u) { try { localStorage.removeItem('pasiya_key'); } catch (e) {} }
         if (first && !u && ssoToken) { first = false; A.signInWithCustomToken(P.auth, ssoToken).catch(function () { renderAll(); }); ssoToken = null; return; }
         first = false; P.user = u; P.me = null; renderAll(); if (u) loadMe();
         D.dispatchEvent(new CustomEvent('ps:user', { detail: u }));
