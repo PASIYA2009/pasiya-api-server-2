@@ -44,6 +44,16 @@ function findTitle(html) {
   const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
   return decodeText(og?.content || h1?.[1] || title?.[1] || '') || null;
 }
+function detectQuality(s) {
+  const t = String(s || '');
+  const m = t.match(/\b(2160|1440|1080|720|576|540|480|360|240)\s*p\b/i) || t.match(/\b(4K|2K)\b/i);
+  if (!m) return null;
+  return /^\d+$/.test(m[1]) ? `${m[1]}p` : m[1].toUpperCase();
+}
+function detectSize(s) {
+  const m = String(s || '').match(/\b(\d+(?:\.\d+)?)\s*(GB|MB)\b/i);
+  return m ? `${m[1]} ${m[2].toUpperCase()}` : null;
+}
 async function getHtml(url) {
   let response;
   try {
@@ -118,8 +128,18 @@ async function getMovieDetails(p) {
     const href = absoluteUrl(a.href, finalUrl);
     if (!href || !isLandingPage(href) || seen.has(href)) continue;
     seen.add(href);
-    downloadLinks.push({ text: decodeText(m[2]) || 'Download Link', url: href });
+    const text = decodeText(m[2]) || 'Download Link';
+    // Quality/size: link text first, then the enclosing table row / list item, then the text just before the link.
+    const before = html.slice(0, m.index);
+    const rowStart = Math.max(before.lastIndexOf('<tr'), before.lastIndexOf('<li'));
+    const rowCtx = rowStart >= 0 && m.index - rowStart < 1500 ? decodeText(html.slice(rowStart, m.index + m[0].length)) : '';
+    const nearCtx = decodeText(before.slice(-300));
+    const quality = detectQuality(`${text} ${a.title || ''} ${a['data-quality'] || ''} ${href}`) || detectQuality(rowCtx) || detectQuality(nearCtx);
+    const size = detectSize(text) || detectSize(rowCtx) || detectSize(nearCtx);
+    downloadLinks.push({ text, quality, size, url: href });
   }
+  const downloadLinksByQuality = {};
+  for (const l of downloadLinks) (downloadLinksByQuality[l.quality || 'Other'] ||= []).push(l);
   return {
     creator: '@pasidueshan',
     success: true,
@@ -129,7 +149,8 @@ async function getMovieDetails(p) {
       title: findTitle(html),
       poster: absoluteUrl(og?.content || posterAttr.src || posterAttr['data-src'] || ''),
       synopsis: decodeText(desc?.content || '') || null,
-      downloadLinks
+      downloadLinks,
+      downloadLinksByQuality
     }
   };
 }
