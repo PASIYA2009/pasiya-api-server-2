@@ -40,7 +40,7 @@ Tests: `node test/run.mjs` (offline, mocked sites, no install needed).
 - **`quality` parameter on the existing YouTube downloads:** `/api/yt/mp4-dl` and `/api/scraper/youtube/download` now accept `quality=144|240|360|480|720|1080` (empty = best, as before). The answer also lists every `qualities` row and the `audio` file.
 - **`/api/yt/quality` (list everything at once):** one call returns direct links for 144p, 240p, 360p, 480p, 720p and 1080p plus the best audio. Rows have `hasAudio`; YouTube serves most 480p+ files video-only (`needsAudioMerge: true`), merge them with `audio` using ffmpeg.
 - **New downloaders (keyless):** `/api/streamable/dl`, `/api/vimeo/dl`, `/api/reddit/dl` (all need `rightsConfirmed=true`).
-- **Dashboard:** new `public/fx.css` + `public/fx.js` (aurora background, splash, scroll reveal, card spotlight, progress bar, reduced-motion safe) and a "YouTube video downloader" panel above the API Explorer.
+- **Dashboard:** new `public/fx.css` + `public/fx.js` (light scroll-reveal for panels, short splash, small hover lift; transform/opacity only so it never lags, reduced-motion safe).
 
 ## v4.3
 - **Redeploy no longer wipes your variables:** `wrangler.jsonc` now has `"keep_vars": true` and no placeholder values (a name listed in `vars` overrides the dashboard). Add keys in the dashboard as **Secret** type and they always survive.
