@@ -2,6 +2,7 @@
 // YouTube / TikTok / Facebook / Instagram reuse the same code as /api/scraper/<site>/download (so they share the same rightsConfirmed rule).
 import { HttpError, fetchT, cached, param } from '../system/util.js';
 import { UA, safeUrl, page, meta } from './_web.js';
+import { ytDownload } from './yt_quality.js';
 import { youtube, tiktok, social, ytId, guard, out } from './download.js';
 
 const RIGHTS = param('rightsConfirmed', 'true', 'Must be true: you own the media or have permission to download it');
@@ -76,7 +77,7 @@ async function spotify(p) {
 
 const L = (ex) => [param('url', ex, 'Public link'), RIGHTS];
 export default [
-  { path: '/api/yt/mp4-dl', category: 'Social', name: 'YouTube MP4 DL', cost: 2, isNew: true, desc: 'Direct MP4 link for a public YouTube video (best available quality)', params: [param('url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube link'), RIGHTS], run: withType(youtube, 'video') },
+  { path: '/api/yt/mp4-dl', category: 'Social', name: 'YouTube MP4 DL', cost: 2, isNew: true, desc: 'Direct MP4 link for a public YouTube video: best quality, or pick one with quality=144/240/360/480/720/1080', params: [param('url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube link'), RIGHTS, param('quality', '720', 'Optional: 144, 240, 360, 480, 720 or 1080 (empty = best). 480p+ may be video-only', false)], run: withType(ytDownload, 'video') },
   { path: '/api/yt/mp3-dl', category: 'Social', name: 'YouTube MP3 DL', cost: 2, isNew: true, desc: 'Direct audio link (m4a) for a public YouTube video', params: [param('url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube link'), RIGHTS], run: withType(youtube, 'audio') },
   { path: '/api/yt/thumbnail-dl', category: 'Social', name: 'YouTube Thumbnail DL', cost: 0, isNew: true, desc: 'All thumbnail sizes (max-res to small) with direct image links', params: [param('url', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube link')], run: ytThumb },
   { path: '/api/tiktok/dl', category: 'Social', name: 'TikTok DL', cost: 2, isNew: true, desc: 'Direct links for a public TikTok video (HD) or its MP3 (type=audio)', params: [...L('https://www.tiktok.com/@scout2015/video/6718335390845095173'), param('type', 'video', 'video or audio', false)], run: tiktok },

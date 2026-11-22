@@ -2,7 +2,7 @@
 // Links come from the same sources as /api/yt/mp4-dl (player API first, public mirrors / cobalt / Apify as backup).
 // Note: YouTube serves 480p and above mostly as VIDEO-ONLY files. Those rows have hasAudio=false and need `audio` merged (ffmpeg).
 import { HttpError, param } from '../system/util.js';
-import { guard, ytId, ytPlayer, ytFallback } from './download.js';
+import { guard, ytId, ytPlayer, ytFallback, youtube, out } from './download.js';
 
 const TARGETS = [144, 240, 360, 480, 720, 1080];
 const RIGHTS = param('rightsConfirmed', 'true', 'Must be true: you own the media or have permission to download it');
@@ -69,6 +69,19 @@ async function ytQuality(p, env = {}) {
     ...(missing.length ? { unavailable: missing } : {}),
     note: 'Rows with needsAudioMerge=true are video-only (YouTube splits HD this way): download them together with `audio` and merge with ffmpeg. 360p / 720p rows (when listed with hasAudio=true) play with sound directly.'
   };
+}
+
+// Used by the EXISTING YouTube download endpoints: quality=144|240|360|480|720|1080 picks that file; no quality = old behaviour (best).
+export async function ytDownload(p, env = {}) {
+  const type = guard(p);
+  const want = parseInt(String(p.quality || '').replace(/\D/g, ''), 10) || 0;
+  if (type === 'audio' || !want) return youtube(p, env);
+  const r = await ytQuality(p, env);
+  const pick = r.qualities.find((q) => q.height === want);
+  if (!pick) throw new HttpError(404, `${want}p is not available for this video. Available: ${r.qualities.map((q) => q.quality).join(', ')}.`);
+  const o = out('youtube', r.title, 'video', 'mp4', pick.url);
+  Object.assign(o.download, { quality: pick.quality, hasAudio: pick.hasAudio, needsAudioMerge: !pick.hasAudio, filesize: pick.filesize });
+  return { ...o, qualities: r.qualities, audio: r.audio, ...(pick.hasAudio ? {} : { note: 'This quality is video-only (YouTube splits HD): download `audio` too and merge with ffmpeg.' }) };
 }
 
 export default [

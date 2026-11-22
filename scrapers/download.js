@@ -166,10 +166,11 @@ export async function youtube(p, env = {}) {
 }
 
 const DL = (ex) => [param('url', ex, 'Public video link'), param('rightsConfirmed', 'true', 'Must be true: you own the media or have permission to download it'), param('type', 'video', 'video or audio', false)];
+const QUALITY = param('quality', '720', 'Optional: 144, 240, 360, 480, 720 or 1080 (empty = best). 480p+ may be video-only', false);
 const dl = (site, name, ex, what, run) => ({ path: `/api/scraper/${site}/download`, remote: `${site}/download`, category: 'Social', name: `${name} download`, cost: 2, desc: `Download link for ${what}`, params: DL(ex), run });
 
 export default [
-  dl('youtube', 'YouTube', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'a public video (video or audio)', youtube),
+  { ...dl('youtube', 'YouTube', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'a public video (video or audio, or a chosen quality)', (p, env) => import('./yt_quality.js').then((m) => m.ytDownload(p, env))), params: [...DL('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), QUALITY] },
   dl('tiktok', 'TikTok', 'https://www.tiktok.com/@scout2015/video/6718335390845095173', 'a public TikTok video (video or audio)', tiktok),
   dl('facebook', 'Facebook', 'https://www.facebook.com/watch/?v=10153231379946729', 'a public Facebook video', social('facebook', 'Facebook', ['facebook.com', 'fb.watch'])),
   dl('instagram', 'Instagram', 'https://www.instagram.com/p/fA9uwTtkSN/', 'a public Instagram reel / video', social('instagram', 'Instagram', ['instagram.com']))
