@@ -36,6 +36,11 @@ Tests: `node test/run.mjs` (offline, mocked sites, no install needed).
 - Downloads are best effort (sites change; YouTube may refuse Cloudflare Workers's datacenter IPs). For maximum reliability host the separate yt-dlp service (`pasiya-scraper-api`) and set `SCRAPER_URL` + `SCRAPER_SHARED_SECRET`: it then answers the download endpoints instead.
 - `maxDuration` is 30s in `vercel.json` (Hobby allows up to 60).
 
+## v4.4
+- **New `/api/yt/quality`:** one call returns direct links for 144p, 240p, 360p, 480p, 720p and 1080p plus the best audio. Rows have `hasAudio`; YouTube serves most 480p+ files video-only (`needsAudioMerge: true`), merge them with `audio` using ffmpeg.
+- **New downloaders (keyless):** `/api/streamable/dl`, `/api/vimeo/dl`, `/api/reddit/dl` (all need `rightsConfirmed=true`).
+- **Dashboard:** new `public/fx.css` + `public/fx.js` (aurora background, splash, scroll reveal, card spotlight, progress bar, reduced-motion safe) and a "YouTube video downloader" panel above the API Explorer.
+
 ## v4.3
 - **Redeploy no longer wipes your variables:** `wrangler.jsonc` now has `"keep_vars": true` and no placeholder values (a name listed in `vars` overrides the dashboard). Add keys in the dashboard as **Secret** type and they always survive.
 - **YouTube MP4 / MP3 / HD:** when YouTube blocks the Cloudflare IP, the API now tries public Piped / Invidious mirrors, then your `COBALT_API_URL`, then an Apify downloader actor (needs `APIFY_TOKEN`, override with `YT_APIFY_ACTOR`) before giving up.
