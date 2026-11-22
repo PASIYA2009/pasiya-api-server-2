@@ -11,20 +11,11 @@
 }
 .btn:active{transform:scale(.97)}
 
-/* splash (first page of a session, 0.8s) */
-.fx-loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:var(--bg,#070b14);transition:opacity .4s ease,visibility .4s}
-.fx-loader.out{opacity:0;visibility:hidden}
-.fx-loader .mark{display:grid;justify-items:center;gap:16px}
-.fx-loader .hex{width:68px;height:68px;display:grid;place-items:center;font:800 28px var(--sans,Outfit,sans-serif);color:var(--on-primary,#fff);background:linear-gradient(135deg,var(--primary,#3b9cf5),var(--violet,#6a5be6));clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%);animation:fxPulse 1.2s ease-in-out infinite}
-.fx-loader b{letter-spacing:.34em;font:700 12px var(--mono,monospace);color:var(--muted,#8393ad)}
-@keyframes fxPulse{50%{transform:scale(1.1)}}
-
 /* login / register card entrance */
 .auth-card,.card,main>form{animation:fxPop .5s ease-out both}
 @keyframes fxPop{from{opacity:0;transform:translate3d(0,14px,0)}}
 
 @media (prefers-reduced-motion:reduce){
   .fx-reveal{opacity:1;transform:none;transition:none}
-  .fx-loader{display:none}
-  .auth-card,.card,main>form,.fx-loader .hex{animation:none}
+  .auth-card,.card,main>form{animation:none}
 }

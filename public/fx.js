@@ -1,17 +1,9 @@
-/* PASIYA FX (light): scroll-reveal for panels + a short splash. No scroll listeners, no per-frame work. */
+/* PASIYA FX (light): scroll-reveal for panels. No scroll listeners, no per-frame work. */
 (() => {
   'use strict';
   const doc = document;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const el = (tag, cls, text) => { const n = doc.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
-
-  function splash() {
-    if (reduce) return;
-    try { if (sessionStorage.getItem('fx_splash')) return; sessionStorage.setItem('fx_splash', '1'); } catch { return; }
-    const mark = el('div', 'mark'); mark.append(el('div', 'hex', 'P'), el('b', '', 'PASIYA API'));
-    const l = el('div', 'fx-loader'); l.setAttribute('role', 'status'); l.append(mark); doc.body.append(l);
-    setTimeout(() => { l.classList.add('out'); setTimeout(() => l.remove(), 450); }, 800);
-  }
 
   // Only elements that are still BELOW the screen get the animation, and each one animates once, then is left alone.
   function reveal() {
@@ -28,6 +20,6 @@
     });
   }
 
-  const start = () => { splash(); reveal(); };
+  const start = () => { reveal(); };
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
 })();
