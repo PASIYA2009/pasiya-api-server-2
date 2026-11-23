@@ -209,7 +209,7 @@ body{background:transparent!important}body::before{display:none}
 .card,.panel{background:color-mix(in srgb,var(--surface) 80%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-color:rgba(var(--a-rgb),.16)}
 .card:hover{border-color:rgba(var(--a-rgb),.38)}
 </style>
-<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{var d=document.documentElement,L=localStorage,a=L.getItem("pasiya_accent")||L.getItem("pasiya_def_accent");d.dataset.accent=a||"blue";if(!a){var s=document.createElement("style");s.textContent="html.ps-wait body{opacity:0!important}";document.head.appendChild(s);d.classList.add("ps-wait");var f=function(){d.classList.remove("ps-wait")},c=window.AbortController?new AbortController():null,t=setTimeout(function(){f();c&&c.abort()},1500);fetch("/api/theme",{cache:"no-store",signal:c&&c.signal}).then(function(r){return r.json()}).then(function(j){if(j&&j.accent){d.dataset.accent=j.accent;try{L.setItem("pasiya_def_accent",j.accent)}catch(e){}}}).catch(function(){}).then(function(){clearTimeout(t);f()})}}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script><link rel="stylesheet" href="/fx.css"><script src="/fx.js" defer></script></head>
+<link rel="stylesheet" href="/palette.css"><link rel="stylesheet" href="/shell.css"><script>try{var d=document.documentElement,L=localStorage,a=L.getItem("pasiya_accent")||L.getItem("pasiya_def_accent");d.dataset.accent=a||"blue";if(!a){var s=document.createElement("style");s.textContent="html.ps-wait body{opacity:0!important}";document.head.appendChild(s);d.classList.add("ps-wait");var f=function(){d.classList.remove("ps-wait")},c=window.AbortController?new AbortController():null,t=setTimeout(function(){f();c&&c.abort()},1500);fetch("/api/theme",{cache:"no-store",signal:c&&c.signal}).then(function(r){return r.json()}).then(function(j){if(j&&j.accent){d.dataset.accent=j.accent;try{L.setItem("pasiya_def_accent",j.accent)}catch(e){}}}).catch(function(){}).then(function(){clearTimeout(t);f()})}}catch(e){}</script><script>window.PS_ROLE="api"</script><script src="/shell.js" defer></script><link rel="stylesheet" href="/fx.css"><link rel="stylesheet" href="/hero.css"><script src="/fx.js" defer></script></head>
 <body>
 <div hidden id="legacyStubs" aria-hidden="true">
   <button id="themeBtn"></button><a id="regTop"></a><a id="loginTop"></a><button id="userBtn"></button><button id="menuBtn"></button><button id="menuClose"></button><div id="drawerBack"></div><div id="sideMenu"></div>
@@ -239,6 +239,35 @@ body{background:transparent!important}body::before{display:none}
       <div><div class="eyebrow">DEVELOPER CONSOLE / OVERVIEW</div><h1>Welcome to PASIYA API</h1><div class="muted">Sri Lanka news, search, utilities, weather, AI and more. One free API key for everything.</div></div>
       <span class="pill warn" id="accountState">GUEST</span>
     </div>
+    <div class="hero-fx" aria-hidden="true">
+<svg viewBox="0 0 560 330" role="img" focusable="false">
+<defs>
+<linearGradient id="hxUnit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--surface2)"/><stop offset="1" stop-color="var(--surface)"/></linearGradient>
+<linearGradient id="hxScan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--a)" stop-opacity="0"/><stop offset=".5" stop-color="var(--a)" stop-opacity=".55"/><stop offset="1" stop-color="var(--a)" stop-opacity="0"/></linearGradient>
+<radialGradient id="hxGlow"><stop offset="0" stop-color="var(--a)" stop-opacity=".45"/><stop offset="1" stop-color="var(--a)" stop-opacity="0"/></radialGradient>
+<path id="hx-c" d="M280,80 L280,136"/><path id="hx-w" d="M137,108 Q205,108 236,164"/><path id="hx-a" d="M423,108 Q355,108 324,164"/><path id="hx-d" d="M137,242 Q205,242 236,216"/><path id="hx-r" d="M423,242 Q355,242 324,216"/>
+<clipPath id="hxClip"><rect x="232" y="138" width="96" height="102" rx="10"/></clipPath>
+</defs>
+<circle class="hx-glow" cx="280" cy="190" r="120" fill="url(#hxGlow)"/>
+<circle class="hx-orbit" cx="280" cy="190" r="150"/>
+<circle class="hx-ring" cx="280" cy="190" r="64"/><circle class="hx-ring" cx="280" cy="190" r="64"/><circle class="hx-ring" cx="280" cy="190" r="64"/>
+<use href="#hx-c" class="hx-line"/><use href="#hx-w" class="hx-line"/><use href="#hx-a" class="hx-line"/><use href="#hx-d" class="hx-line"/><use href="#hx-r" class="hx-line"/>
+<circle class="hx-pkt" r="3.4" visibility="hidden"><set attributeName="visibility" to="visible" begin="0s"/><animateMotion dur="1.8s" begin="0s" repeatCount="indefinite"><mpath href="#hx-c"/></animateMotion></circle><circle class="hx-pkt" r="3.4" visibility="hidden"><set attributeName="visibility" to="visible" begin="0.4s"/><animateMotion dur="2.2s" begin="0.4s" repeatCount="indefinite"><mpath href="#hx-w"/></animateMotion></circle><circle class="hx-pkt" r="3.4" visibility="hidden"><set attributeName="visibility" to="visible" begin="1.1s"/><animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#hx-a"/></animateMotion></circle><circle class="hx-pkt" r="3.4" visibility="hidden"><set attributeName="visibility" to="visible" begin="0.8s"/><animateMotion dur="2.4s" begin="0.8s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#hx-d"/></animateMotion></circle><circle class="hx-pkt" r="3.4" visibility="hidden"><set attributeName="visibility" to="visible" begin="1.6s"/><animateMotion dur="2.4s" begin="1.6s" repeatCount="indefinite"><mpath href="#hx-r"/></animateMotion></circle><circle class="hx-pkt" r="3.4" visibility="hidden"><set attributeName="visibility" to="visible" begin="0.9s"/><animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#hx-c"/></animateMotion></circle>
+<ellipse cx="280" cy="254" rx="86" ry="13" fill="rgba(var(--a-rgb),.14)" stroke="rgba(var(--a-rgb),.5)" stroke-width="1.2"/>
+<ellipse cx="280" cy="254" rx="58" ry="8" fill="none" stroke="rgba(var(--a-rgb),.35)" stroke-width="1"/>
+<g>
+<rect class="hx-unit" x="232" y="138" width="96" height="30" rx="8"/><rect class="hx-bar" x="244" y="148" width="40" height="3" rx="1.5"/><rect class="hx-bar" x="244" y="156" width="26" height="3" rx="1.5"/><circle class="hx-led" cx="306" cy="153" r="3"/><circle class="hx-led b" cx="316" cy="153" r="3"/>
+<rect class="hx-unit" x="232" y="174" width="96" height="30" rx="8"/><rect class="hx-bar" x="244" y="184" width="46" height="3" rx="1.5"/><rect class="hx-bar" x="244" y="192" width="30" height="3" rx="1.5"/><circle class="hx-led c" cx="306" cy="189" r="3"/><circle class="hx-led" cx="316" cy="189" r="3"/>
+<rect class="hx-unit" x="232" y="210" width="96" height="30" rx="8"/><rect class="hx-bar" x="244" y="220" width="34" height="3" rx="1.5"/><rect class="hx-bar" x="244" y="228" width="44" height="3" rx="1.5"/><circle class="hx-led b" cx="306" cy="225" r="3"/><circle class="hx-led c" cx="316" cy="225" r="3"/>
+<g clip-path="url(#hxClip)"><rect class="hx-scan" x="232" y="138" width="96" height="14"/></g>
+</g>
+<text class="hx-lbl" x="280" y="288" text-anchor="middle">SERVERS</text>
+<g class="hx-node"><circle class="hx-disc" cx="280" cy="52" r="27"/><g transform="translate(268 40)"><path class="hx-ico" d="M7 18a4 4 0 010-8 5 5 0 019.6-1.2A4.5 4.5 0 0117 18z"/></g><text class="hx-lbl" x="318" y="56" text-anchor="start">CLOUD</text></g>
+<g class="hx-node"><circle class="hx-disc" cx="110" cy="108" r="27"/><g transform="translate(98 96)"><path class="hx-ico" d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></g><text class="hx-lbl" x="110" y="152" text-anchor="middle">WEBHOOK</text></g>
+<g class="hx-node"><circle class="hx-disc" cx="450" cy="105" r="27"/><text class="hx-api" x="450" y="110" text-anchor="middle">API</text><text class="hx-lbl" x="450" y="152" text-anchor="middle">GATEWAY</text></g>
+<g class="hx-node"><circle class="hx-disc" cx="110" cy="242" r="27"/><g transform="translate(98 230)"><ellipse class="hx-ico" cx="12" cy="6" rx="7" ry="3"/><path class="hx-ico" d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></g><text class="hx-lbl" x="110" y="286" text-anchor="middle">DATABASE</text></g>
+<g class="hx-node"><circle class="hx-disc" cx="450" cy="242" r="27"/><g transform="translate(438 230)"><rect class="hx-ico" x="3" y="14" width="18" height="6" rx="2"/><path class="hx-ico" d="M7 17h.01M11 17h.01M8 11a6 6 0 018 0M5.5 8.5a10 10 0 0113 0"/></g><text class="hx-lbl" x="450" y="286" text-anchor="middle">ROUTER</text></g>
+</svg></div>
     <div class="live"><span class="pulse" id="livePulse"></span><span class="t">LIVE SYSTEM STATUS</span></div>
     <div class="stats" id="statusGrid" aria-live="polite"></div>
     <section class="panel" id="publicInsights" aria-labelledby="publicInsightsTitle">
@@ -268,6 +297,7 @@ body{background:transparent!important}body::before{display:none}
       </div>
     </div>
   </section>
+  <script>try{if(matchMedia("(prefers-reduced-motion: reduce)").matches){var hs=document.querySelector(".hero-fx svg");hs&&hs.pauseAnimations()}}catch(e){}</script>
 
   <section id="apis" class="panel">
     <div class="eyebrow">DEVELOPER TOOLS</div>
