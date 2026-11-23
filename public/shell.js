@@ -252,7 +252,28 @@
     back = D.createElement('div'); back.className = 'psd-back'; back.id = 'psdBack';
     drawer = D.createElement('aside'); drawer.className = 'psd'; drawer.id = 'psd'; drawer.setAttribute('aria-label', 'Main menu'); drawer.setAttribute('aria-hidden', 'true');
     drawer.innerHTML =
-      '<div class="psd-head"><div><small>' + esc(SITE.n.toUpperCase()) + '</small><strong>Menu</strong></div><button type="button" class="psd-close" id="psdClose" aria-label="Close menu">' + ico('x') + '</button></div>' +
+      '<div class="psd-head psd-head-min"><button type="button" class="psd-close" id="psdClose" aria-label="Close menu">' + ico('x') + '</button></div>' +
+      '<div class="psh" aria-hidden="true"><div class="psh-art"><i class="psh-blob"></i><i class="psh-ring"></i>' +
+        '<svg class="psh-svg" viewBox="0 0 140 140"><g class="psh-char">' +
+        '<path class="hd" d="M34 78c8-30 64-30 72 0z"/>' +
+        '<path class="hy" d="M14 140c2-26 20-40 42-44h28c22 4 40 18 42 44z"/>' +
+        '<path class="hyl" d="M56 96c4 10 24 10 28 0l6 2c-4 16-36 16-40 0z"/>' +
+        '<path class="ds" d="M62 108v12M78 108v12"/><circle class="dsb" cx="62" cy="122" r="1.8"/><circle class="dsb" cx="78" cy="122" r="1.8"/>' +
+        '<path class="nk" d="M61 82h18v14c-5 6-13 6-18 0z"/><path class="nks" d="M61 90c6 5 12 5 18 0v-4H61z"/>' +
+        '<path class="fc" d="M44 56c0-20 12-32 26-32s26 12 26 32c0 22-12 36-26 36S44 78 44 56z"/>' +
+        '<ellipse class="bl" cx="55" cy="72" rx="6" ry="3.4"/><ellipse class="bl" cx="85" cy="72" rx="6" ry="3.4"/>' +
+        '<path class="hr" d="M41 60c-6-26 8-42 30-42 22 0 36 14 29 42-2-10-6-16-12-19-8 6-22 8-34 5-6 3-10 9-13 14z"/>' +
+        '<path class="hh" d="M52 28c8-6 20-8 30-3"/>' +
+        '<path class="br" d="M52 52c4-3 9-3 13-1M75 51c4-2 9-2 13 1"/>' +
+        '<g class="ey"><ellipse class="eye" cx="59" cy="62" rx="4.2" ry="5.4"/><ellipse class="eye" cx="81" cy="62" rx="4.2" ry="5.4"/><circle class="shn" cx="60.6" cy="60" r="1.5"/><circle class="shn" cx="82.6" cy="60" r="1.5"/></g>' +
+        '<path class="ns" d="M70 66v6"/>' +
+        '<path class="mo" d="M63 77c4 5 10 5 14 0"/>' +
+        '<path class="hp" d="M43 60c-4-26 10-40 27-40s31 14 27 40"/><rect class="hc" x="37" y="55" width="10" height="22" rx="5"/><rect class="hc" x="93" y="55" width="10" height="22" rx="5"/><circle class="hg" cx="42" cy="66" r="2.2"/><circle class="hg" cx="98" cy="66" r="2.2"/>' +
+        '<g class="lp"><rect x="32" y="108" width="76" height="34" rx="6"/><path class="lg" d="M64 125l4-5 4 5-4 5z"/><rect class="ln l1" x="40" y="114" width="20" height="3" rx="1.5"/><rect class="ln l2" x="80" y="114" width="20" height="3" rx="1.5"/></g>' +
+        '</g></svg>' +
+        '<span class="psh-sy s1">&lt;/&gt;</span><span class="psh-sy s2">{ }</span><span class="psh-sy s3">( )</span><span class="psh-sy s4">;</span>' +
+        '<span class="psh-js">JS</span><span class="psh-ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div>' +
+        '<div class="psh-txt"><span class="psh-pill"><i></i>DEVELOPER</span><b>PASIDU<br>ESHAN</b><em class="psh-term">&gt; <span>pasiya --online</span><u></u></em></div></div>' +
       '<div data-ps-account></div><div data-ps-admin></div><div data-ps-pagehost></div><div data-ps-acctlinks></div><div data-ps-sites></div>' +
       '<div class="ps-sec">MUSIC</div>' +
       '<div class="psp" id="psPlayer"><div class="psp-art" id="psArt" aria-hidden="true">' + ico('note') + '</div><div class="psp-info"><b id="psTitle">Music</b><small id="psSub">Loading\u2026</small></div>' +
@@ -275,6 +296,7 @@
   function openMenu(on) {
     if (!drawer) return;
     if (on) lastFocus = D.activeElement;
+    if (on) $$('.ps-sec,.ps-links a,.psp,.ps-acct,[data-ps-pagehost] .nav', drawer).forEach(function (el, i) { el.style.setProperty('--i', Math.min(i, 14)); });
     drawer.classList.toggle('open', on); back.classList.toggle('open', on); H.classList.toggle('ps-lock', on);
     drawer.setAttribute('aria-hidden', String(!on)); $('#psMenuBtn').setAttribute('aria-expanded', String(on));
     if (on) { setTimeout(function () { var c = $('#psdClose'); if (c) c.focus(); }, 60); } else if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} lastFocus = null; }

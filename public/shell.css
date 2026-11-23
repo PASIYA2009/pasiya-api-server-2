@@ -172,3 +172,101 @@ body{background:transparent!important}
 /* live coin counter: small pop when the number changes */
 .ps-bump{display:inline-block;animation:psBump .7s ease}
 @keyframes psBump{0%{transform:scale(1)}35%{transform:scale(1.4);filter:brightness(1.5)}100%{transform:scale(1)}}
+@keyframes psBump{0%{transform:scale(1)}35%{transform:scale(1.4);filter:brightness(1.5)}100%{transform:scale(1)}}
+
+/* ===== menu animation (cyber style): items slide in one by one, blinking cursor, scan line, live tags ===== */
+.psd-head{position:relative}
+.psd-head::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:38%;background:linear-gradient(90deg,transparent,var(--a),transparent);opacity:0;border-radius:2px}
+.psd-head strong::after{content:"";display:inline-block;width:.5em;height:1em;margin-left:8px;vertical-align:-.12em;background:var(--a);border-radius:2px;animation:psCaret 1s steps(2,start) infinite}
+.psd.open .psd-head::after{opacity:1;animation:psScan 2.8s ease-in-out infinite}
+.psd .ps-sec,.psd .ps-links a,.psd [data-ps-pagehost] .nav,.psd .psp,.psd .ps-acct{opacity:0}
+.psd.open .ps-sec{animation:psIn .42s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*55ms + 120ms)}
+.psd.open .ps-links a,.psd.open [data-ps-pagehost] .nav,.psd.open .psp,.psd.open .ps-acct{animation:psIn .46s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*55ms + 160ms)}
+.ps-links a.on{position:relative;overflow:hidden}
+.ps-links a.on::after{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,rgba(var(--a-rgb),.22),transparent);transform:skewX(-20deg);animation:psSheen 3.6s ease-in-out infinite}
+.ps-links a .ps-ico{transition:transform .2s,color .2s}
+.ps-links a:hover .ps-ico{transform:scale(1.18) rotate(-6deg)}
+.ps-tag{animation:psTagGlow 2.6s ease-in-out infinite}
+.ps-tag.live{animation:psTagLive 1.6s ease-in-out infinite}
+@keyframes psIn{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes psCaret{to{visibility:hidden}}
+@keyframes psScan{0%{left:-40%}100%{left:102%}}
+@keyframes psSheen{0%,55%{left:-70%}100%{left:140%}}
+@keyframes psTagGlow{50%{box-shadow:0 0 12px rgba(var(--a-rgb),.35)}}
+@keyframes psTagLive{50%{box-shadow:0 0 12px #34d39966;border-color:#34d399}}
+@media(prefers-reduced-motion:reduce){.psd .ps-sec,.psd .ps-links a,.psd [data-ps-pagehost] .nav,.psd .psp,.psd .ps-acct{opacity:1!important;animation:none!important}.psd-head strong::after,.psd-head::after,.ps-links a.on::after,.ps-tag{animation:none!important}}
+
+/* ===== animated developer hero in the menu (colours follow the chosen accent) ===== */
+.psh{display:flex;align-items:center;gap:14px;margin:14px 0 4px;padding:12px;border-radius:20px;border:1px solid rgba(var(--a-rgb),.22);background:linear-gradient(135deg,rgba(var(--a-rgb),.14),rgba(var(--b-rgb),.08) 60%,transparent);position:relative;overflow:hidden}
+.psh::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(var(--a-rgb),.07) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--a-rgb),.07) 1px,transparent 1px);background-size:18px 18px;-webkit-mask-image:radial-gradient(circle at 25% 50%,#000,transparent 75%);mask-image:radial-gradient(circle at 25% 50%,#000,transparent 75%);pointer-events:none}
+.psd.open .psh{animation:psIn .5s cubic-bezier(.2,.8,.2,1) both .08s}
+.psh-art{position:relative;flex:none;width:122px;height:122px}
+.psh-blob{position:absolute;inset:4px;border:2px solid rgba(var(--a-rgb),.65);background:linear-gradient(145deg,rgba(var(--a-rgb),.2),rgba(var(--b-rgb),.12));box-shadow:0 0 22px rgba(var(--a-rgb),.35),inset 0 0 18px rgba(var(--b-rgb),.25);border-radius:42% 58% 55% 45%/48% 42% 58% 52%;animation:psBlob 7s ease-in-out infinite}
+.psh-ring{position:absolute;inset:-2px;border-radius:50%;border:1px dashed rgba(var(--b-rgb),.45);animation:psSpin 18s linear infinite}
+.psh-svg{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);overflow:visible;clip-path:inset(0 round 38%)}
+.psh-char{animation:psFloat 4.2s ease-in-out infinite;transform-origin:70px 120px;transform-box:view-box}
+.psh-svg .sh{fill:var(--a)}.psh-svg .co{fill:none;stroke:rgba(255,255,255,.45);stroke-width:3;stroke-linejoin:round}
+.psh-svg .sk{fill:#f0b88a}.psh-svg .hr{fill:#2a2140}
+.psh-svg .gl circle{fill:rgba(255,255,255,.12);stroke:#d6deef;stroke-width:2}.psh-svg .gl path{fill:none;stroke:#d6deef;stroke-width:2}
+.psh-svg .eye{fill:#241a38;transform-box:fill-box;transform-origin:center;animation:psBlink 4.6s infinite}
+.psh-svg .mo{fill:none;stroke:#8a4b33;stroke-width:2.4;stroke-linecap:round}
+.psh-svg .hp{fill:none;stroke:var(--b);stroke-width:6;stroke-linecap:round}.psh-svg .hc{fill:var(--b);stroke:rgba(0,0,0,.25);stroke-width:1}
+.psh-svg .lp rect:first-child{fill:#0b1222;stroke:rgba(var(--a-rgb),.7);stroke-width:2}
+.psh-svg .ln{fill:var(--a);transform-box:fill-box;transform-origin:left center;animation:psType 3.2s ease-in-out infinite}
+.psh-svg .l2{animation-delay:.5s;fill:var(--b)}.psh-svg .l3{animation-delay:1s}
+.psh-sy{position:absolute;font:700 13px ui-monospace,Menlo,Consolas,monospace;color:var(--a);text-shadow:0 0 10px rgba(var(--a-rgb),.7);animation:psSym 5s ease-in-out infinite;opacity:.85}
+.psh-sy.s1{left:2px;top:14px}.psh-sy.s2{right:6px;top:4px;color:var(--b);animation-delay:1.2s}.psh-sy.s3{left:6px;bottom:26px;animation-delay:2.3s;color:var(--b)}.psh-sy.s4{right:12px;bottom:34px;animation-delay:3.1s}
+.psh-js{position:absolute;right:-6px;top:44px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 11px ui-monospace,Menlo,monospace;color:#fbbf24;background:#0b1222;border:1px solid rgba(251,191,36,.5);animation:psBob 3.4s ease-in-out infinite}
+.psh-ok{position:absolute;right:2px;bottom:2px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--a);border:3px solid #0b1222;box-shadow:0 0 14px rgba(var(--a-rgb),.6);animation:psPop 2.8s ease-in-out infinite}
+.psh-ok svg{width:16px;height:16px;fill:none;stroke:var(--on-a,#fff);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.psh-txt{position:relative;min-width:0;display:flex;flex-direction:column;gap:4px}
+.psh-pill{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;padding:4px 10px;border-radius:99px;border:1px solid rgba(var(--a-rgb),.4);background:rgba(var(--a-rgb),.1);font:700 9.5px ui-monospace,Menlo,monospace;letter-spacing:.2em;color:var(--s-text)}
+.psh-pill i{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 #34d39999;animation:psPulse 1.8s infinite}
+.psh-txt b{font-size:25px;line-height:1.02;font-weight:900;letter-spacing:-.01em;background:linear-gradient(100deg,var(--a),var(--b),var(--a));background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:psShine 6s linear infinite}
+.psh-txt small{font:700 9.5px ui-monospace,Menlo,monospace;letter-spacing:.24em;color:var(--s-muted)}
+.psh-term{font:700 11px ui-monospace,Menlo,monospace;font-style:normal;color:var(--a);display:flex;align-items:center;white-space:nowrap}
+.psh-term span{display:inline-block;overflow:hidden;width:0;animation:psTypeTxt 6s steps(15) infinite}
+.psh-term u{display:inline-block;width:7px;height:13px;margin-left:3px;background:var(--a);text-decoration:none;animation:psCaret 1s steps(2,start) infinite}
+@keyframes psBlob{0%,100%{border-radius:42% 58% 55% 45%/48% 42% 58% 52%;transform:rotate(0)}33%{border-radius:58% 42% 46% 54%/52% 58% 42% 48%;transform:rotate(4deg)}66%{border-radius:48% 52% 60% 40%/42% 50% 50% 58%;transform:rotate(-4deg)}}
+@keyframes psSpin{to{transform:rotate(360deg)}}
+@keyframes psFloat{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-4px) rotate(1.2deg)}}
+@keyframes psBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes psType{0%,100%{transform:scaleX(.25)}50%{transform:scaleX(1)}}
+@keyframes psSym{0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(-9px);opacity:1}}
+@keyframes psBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes psPop{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+@keyframes psPulse{70%{box-shadow:0 0 0 7px #34d39900}100%{box-shadow:0 0 0 0 #34d39900}}
+@keyframes psShine{to{background-position:-220% center}}
+@keyframes psTypeTxt{0%{width:0}45%,80%{width:15ch}100%{width:0}}
+@media(max-width:380px){.psh-art{width:104px;height:104px}.psh-txt b{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.psh *,.psh::before,.psh-term span{animation:none!important}.psh-term span{width:15ch}}
+.psh-term span{margin-left:6px}
+
+/* ===== menu v3: no "Menu" row, nicer character ===== */
+.psd-head.psd-head-min{position:sticky;top:0;height:0;padding:0;border:0;display:block;z-index:6;overflow:visible}
+.psd-head.psd-head-min::after{display:none}
+.psd-head-min .psd-close{position:absolute;top:0;right:0;width:36px;height:36px}
+.psh{margin-top:2px;padding-right:44px}
+.psh-svg .hd{fill:color-mix(in srgb,var(--a) 55%,#0b1222)}
+.psh-svg .hy{fill:var(--a)}
+.psh-svg .hyl{fill:color-mix(in srgb,var(--a) 70%,#fff 0%);filter:brightness(.78)}
+.psh-svg .ds{fill:none;stroke:rgba(255,255,255,.85);stroke-width:1.8;stroke-linecap:round}
+.psh-svg .dsb{fill:#fff}
+.psh-svg .nk{fill:#efb48a}.psh-svg .nks{fill:#d99872}
+.psh-svg .fc{fill:#f8cfa6}
+.psh-svg .bl{fill:#f4907f;opacity:.45}
+.psh-svg .hr{fill:#1c1838}
+.psh-svg .hh{fill:none;stroke:var(--b);stroke-width:2.4;stroke-linecap:round;opacity:.9}
+.psh-svg .br{fill:none;stroke:#1c1838;stroke-width:2.2;stroke-linecap:round}
+.psh-svg .eye{fill:#1b1530;transform-box:fill-box;transform-origin:center;animation:psBlink 4.6s infinite}
+.psh-svg .shn{fill:#fff}
+.psh-svg .ns{fill:none;stroke:#d99872;stroke-width:1.8;stroke-linecap:round}
+.psh-svg .mo{fill:none;stroke:#b4573f;stroke-width:2.2;stroke-linecap:round}
+.psh-svg .hp{fill:none;stroke:var(--b);stroke-width:5.5;stroke-linecap:round}
+.psh-svg .hc{fill:var(--b);stroke:rgba(0,0,0,.28);stroke-width:1}
+.psh-svg .hg{fill:#fff;opacity:.9;animation:psPop 2s ease-in-out infinite}
+.psh-svg .lp rect:first-child{fill:#0b1222;stroke:rgba(var(--a-rgb),.75);stroke-width:2}
+.psh-svg .lg{fill:var(--b);filter:drop-shadow(0 0 3px var(--b));animation:psPop 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.psh-svg .ln{fill:var(--a);transform-box:fill-box;transform-origin:left center;animation:psType 3.2s ease-in-out infinite}
+.psh-svg .l2{fill:var(--b);animation-delay:.6s}
+
