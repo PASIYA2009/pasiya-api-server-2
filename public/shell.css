@@ -631,3 +631,10 @@ html{background:#070a14} /* no white flash while a page opens (login etc.) */
 /* v6.5: the OFC / API / AI ... tabs are hidden in the top bar; time, coins, music, settings and account stay at the right, exactly where they were */
 .psb-tabs{display:none!important}
 .psb-right{margin-left:auto!important}
+
+/* v6.6: footer = plain stacked rows. Nothing in it can be a boxed card, overlap its neighbour or keep a fixed height */
+.ps-footer .brand,.ps-footer>p,.ps-footer .ps-info>*,.ps-footer .ps-copy{background:none!important;border-radius:0!important;box-shadow:none!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important}
+.ps-footer .brand,.ps-footer>p,.ps-footer .ps-info>*{border:0!important}
+.ps-footer .ps-info>*{padding:0!important}
+.ps-footer{display:block!important;overflow:visible!important;height:auto!important}
+.ps-footer>*{position:relative;transform:none}

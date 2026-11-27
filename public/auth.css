@@ -55,3 +55,10 @@ label{font:700 13px var(--ps-font,inherit);letter-spacing:.01em}
 html,html[data-theme]{color-scheme:dark;background-color:#070a14!important;background-image:radial-gradient(60% 45% at 85% -5%,rgba(var(--a-rgb,240,75,91),.16),transparent),radial-gradient(55% 45% at 0% 45%,rgba(var(--b-rgb,240,75,91),.12),transparent)!important;background-attachment:fixed}
 body{color:var(--text)}
 .in input:-webkit-autofill,.in input:-webkit-autofill:focus{-webkit-text-fill-color:var(--text);caret-color:var(--text);box-shadow:0 0 0 60px #080d1a inset!important;transition:background-color 9999s}
+
+/* v6.6: the login / register card must never be wider than a phone screen (the grid track used to grow with the card's content) */
+.wrap{grid-template-columns:minmax(0,1fr)}
+.card{min-width:0;max-width:100%}
+.card *{min-width:0;overflow-wrap:anywhere}
+.card input,.card button{max-width:100%}
+html,body{max-width:100%;overflow-x:hidden}
