@@ -1,3 +1,4 @@
+
 /* PASIYA shared shell v2 - ONE file used by every site (OFC, API, QR, AI, Past Papers, Bot).
    top bar + left menu drawer + music player + footer + animated background. */
 :root{--psb-h:60px}
@@ -172,7 +173,6 @@ body{background:transparent!important}
 /* live coin counter: small pop when the number changes */
 .ps-bump{display:inline-block;animation:psBump .7s ease}
 @keyframes psBump{0%{transform:scale(1)}35%{transform:scale(1.4);filter:brightness(1.5)}100%{transform:scale(1)}}
-@keyframes psBump{0%{transform:scale(1)}35%{transform:scale(1.4);filter:brightness(1.5)}100%{transform:scale(1)}}
 
 /* ===== menu animation (cyber style): items slide in one by one, blinking cursor, scan line, live tags ===== */
 .psd-head{position:relative}
@@ -270,3 +270,243 @@ body{background:transparent!important}
 .psh-svg .ln{fill:var(--a);transform-box:fill-box;transform-origin:left center;animation:psType 3.2s ease-in-out infinite}
 .psh-svg .l2{fill:var(--b);animation-delay:.6s}
 
+
+/* ===== PASIYA 2026 refresh: subtle architectural grid + accent-lit glass ===== */
+html{
+  background-color:#080b14;
+  background-image:
+    linear-gradient(rgba(var(--a-rgb),.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(var(--a-rgb),.035) 1px,transparent 1px);
+  background-size:46px 46px;
+  background-position:center top;
+}
+.psb{
+  background:linear-gradient(180deg,rgba(12,14,23,.94),rgba(9,11,19,.78))!important;
+  border-bottom:1px solid rgba(var(--a-rgb),.24)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.35);
+  backdrop-filter:blur(22px) saturate(1.35);
+}
+.psd{
+  background:linear-gradient(165deg,rgba(15,17,29,.985),rgba(7,9,17,.99))!important;
+}
+.psb-brand b{background:linear-gradient(100deg,#fff,var(--a),var(--b));background-clip:text}
+.ps-mobile-dock{display:none}
+
+/* Screenshot-inspired floating bottom bar for phones and small tablets */
+@media(max-width:650px){
+  body.ps-hasbar{padding-bottom:calc(88px + env(safe-area-inset-bottom))!important}
+  .ps-mobile-dock{
+    position:fixed;z-index:99980;left:12px;right:12px;
+    bottom:calc(9px + env(safe-area-inset-bottom));
+    min-height:66px;padding:7px 9px;
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:3px;
+    border:1px solid rgba(var(--a-rgb),.55);border-radius:25px;
+    background:linear-gradient(145deg,rgba(19,23,38,.91),rgba(8,11,20,.94));
+    box-shadow:0 10px 35px rgba(0,0,0,.4),0 0 24px rgba(var(--a-rgb),.10);
+    -webkit-backdrop-filter:blur(22px) saturate(1.35);backdrop-filter:blur(22px) saturate(1.35);
+    padding-bottom:max(7px,env(safe-area-inset-bottom));
+  }
+  .ps-md-item,.ps-md-more{
+    min-width:0;height:52px;padding:4px 2px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    border:0!important;border-radius:15px!important;background:transparent!important;
+    color:#aeb8cc!important;text-decoration:none!important;
+    font:600 10.5px/1.1 Inter,system-ui,sans-serif!important;
+    cursor:pointer;transition:background .2s,color .2s,transform .2s;
+  }
+  .ps-md-item .ps-ico{width:20px;height:20px;color:currentColor}
+  .ps-md-item.on{color:var(--a)!important;background:rgba(var(--a-rgb),.13)!important}
+  .ps-md-item.on .ps-ico{filter:drop-shadow(0 0 7px rgba(var(--a-rgb),.55))}
+  .ps-md-more{color:var(--s-text,#eef3ff)!important}
+  .ps-md-plus{
+    width:42px;height:42px;margin-top:-27px;display:grid;place-items:center;
+    border:2px solid rgba(var(--a-rgb),.85);border-radius:50%;
+    background:linear-gradient(145deg,#171c2b,#0a0e19);
+    color:var(--a);font:400 29px/1 Inter,system-ui,sans-serif;
+    box-shadow:0 0 0 5px rgba(9,12,21,.96),0 0 22px rgba(var(--a-rgb),.22);
+  }
+  .ps-md-more span:last-child{margin-top:-1px}
+  .ps-md-item:active,.ps-md-more:active{transform:scale(.94)}
+  .ps-top{bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  .psb{height:56px;--psb-h:56px}
+  .psb-tabs{display:none!important}
+  .psb-time{display:none!important}
+}
+@media(max-width:360px){
+  .ps-mobile-dock{left:7px;right:7px;grid-template-columns:repeat(5,minmax(0,1fr));padding-left:5px;padding-right:5px}
+  .ps-md-item,.ps-md-more{font-size:9.5px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ps-md-item,.ps-md-more{transition:none!important}
+}
+
+
+/* ===== PASIYA clean theme refinement ===== */
+/* Keep text to white/neutral plus the selected single accent colour. */
+.psb-brand b,.psh-txt b{background:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;-webkit-text-fill-color:var(--a)!important;color:var(--a)!important;animation:none!important}
+.psh-term,.psh-sy,.psh-svg .ln,.psh-svg .l2{color:var(--a)!important;fill:var(--a)!important}
+.psb-tabs a.on{background:rgba(var(--a-rgb),.16)!important;color:var(--a)!important;box-shadow:inset 0 -2px 0 var(--a)!important}
+.psb::after{background:var(--a)!important;opacity:.65}
+.psb-menu{display:none!important}
+@media(min-width:651px){.psb-tabs{display:flex!important}.psb{gap:18px}.psb-tabs{margin:0 auto}.psb-right{margin-left:0}}
+@media(max-width:650px){.psb-tabs{display:none!important}.ps-mobile-dock{grid-template-columns:repeat(5,minmax(0,1fr))!important}.ps-md-settings{color:var(--s-text)!important}.ps-md-settings .ps-ico{color:var(--a)!important}.ps-top{bottom:calc(92px + env(safe-area-inset-bottom))!important}}
+.ps-md-settings:active{transform:scale(.94)}
+
+/* Portfolio typography: white text + the selected theme accent only. */
+.profile h1{background:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;color:var(--a)!important;-webkit-text-fill-color:var(--a)!important;animation:none!important}
+.typing-line,.section-heading h2,.status-pill,.scroll-hint i,.icon,.about-icon,.comment-name,.to-top{color:var(--a)!important}
+.status-pill span{background:var(--a)!important;box-shadow:0 0 10px rgba(var(--a-rgb),.45)!important}
+.photo-wrap{background:var(--a)!important;animation:none!important}
+.photo-ring{animation:none!important;border-style:solid!important;border-color:rgba(var(--a-rgb),.35)!important}
+.link-card.featured{animation:none!important;background:rgba(14,20,38,.82)!important;border:1px solid rgba(var(--a-rgb),.4)!important}
+.link-card.featured .icon,#commentBtn{background:var(--a)!important;color:#fff!important}
+.section-heading .line,.section-heading .line:last-child{background:linear-gradient(90deg,transparent,rgba(var(--a-rgb),.32))!important}
+body::before{background-image:linear-gradient(rgba(var(--a-rgb),.025) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--a-rgb),.025) 1px,transparent 1px)!important}
+@media(min-width:651px){.psb-tabs{overflow-x:auto;max-width:min(56vw,760px);scrollbar-width:none}.psb-tabs::-webkit-scrollbar{display:none}}
+
+
+/* V3 fixes: restore animated canvas background and preserve original skill icon colours */
+#psbg{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;display:block}
+@media(max-width:650px){
+  body.ps-hasbar{padding-bottom:calc(108px + env(safe-area-inset-bottom))!important}
+  .ps-mobile-dock{bottom:calc(10px + env(safe-area-inset-bottom));padding-bottom:7px}
+  .ps-top{bottom:calc(104px + env(safe-area-inset-bottom))!important}
+}
+/* Settings opens as a compact panel above its own dock icon */
+.ps-settings-pop{position:fixed;z-index:100002;right:14px;bottom:calc(88px + env(safe-area-inset-bottom));width:min(280px,calc(100vw - 28px));padding:14px;border:1px solid rgba(var(--a-rgb),.45);border-radius:18px;background:rgba(9,13,24,.97);box-shadow:0 18px 55px rgba(0,0,0,.48),0 0 24px rgba(var(--a-rgb),.12);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);opacity:0;visibility:hidden;transform:translateY(10px) scale(.98);transform-origin:bottom right;transition:opacity .2s,transform .2s,visibility .2s}
+.ps-settings-pop.open{opacity:1;visibility:visible;transform:none}
+.ps-settings-title{display:flex;align-items:center;gap:9px;margin-bottom:13px;color:#fff}
+.ps-settings-title .ps-ico{color:var(--a);width:19px;height:19px}
+.ps-settings-title b{font-size:14px}
+.ps-settings-close{margin-left:auto;border:0;background:transparent;color:#fff;font-size:24px;line-height:1;padding:0 4px;cursor:pointer}
+.ps-settings-pop .ps-theme{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.ps-settings-pop .ps-theme>span{display:none}
+.ps-settings-pop .ps-dots{display:flex;flex-wrap:wrap;gap:12px}
+.ps-settings-pop .ps-dot{width:27px;height:27px}
+.psd [data-ps-sites]{display:none!important}
+@media(max-width:650px){.ps-settings-pop{bottom:calc(91px + env(safe-area-inset-bottom))}}
+
+@media(max-width:900px){.layout .app{padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}}
+
+
+/* ===== V4: desktop menu, page-specific settings, AI launcher and account menu ===== */
+@media(min-width:651px){
+  .psb-menu{display:grid!important;flex:none;width:40px;height:40px;border-radius:12px}
+  .psb{gap:14px}
+  .psb-tabs{display:flex!important}
+}
+@media(max-width:650px){.psb-menu{display:none!important}}
+.psd [data-ps-sites]{display:block!important}
+.ps-settings-page{max-height:min(42vh,300px);overflow:auto;overscroll-behavior:contain;margin:0 -3px 10px;padding:0 3px}
+.ps-settings-page [data-ps-page]{display:block!important}
+.ps-settings-page .ps-sec{margin:7px 4px 8px}
+.ps-settings-page .ps-links{gap:3px}
+.ps-settings-page .ps-links a{padding:10px 11px;font-size:13px}
+.ps-settings-page-empty{font-size:12px;color:var(--s-muted);padding:8px 3px}
+.ps-settings-divider{height:1px;background:rgba(var(--a-rgb),.22);margin:10px 0}
+.ps-settings-theme-label{display:flex;align-items:center;gap:8px;color:#fff;font-size:12px;font-weight:700;margin:2px 0 9px}
+.ps-settings-theme-label .ps-ico{width:17px;height:17px;color:var(--a)}
+.ps-settings-pop .ps-theme{margin:0!important;width:100%}
+.ps-settings-pop .ps-dots{gap:11px!important}
+
+/* AI is a separate compact robot launcher above the mobile navigation bar. */
+.ps-ai-fab{position:fixed;z-index:99979;right:20px;bottom:24px;width:56px;height:56px;border-radius:19px;
+  display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;
+  background:linear-gradient(145deg,rgba(20,27,46,.98),rgba(7,11,21,.98));
+  border:1px solid rgba(var(--a-rgb),.65);box-shadow:0 8px 26px rgba(0,0,0,.38),0 0 22px rgba(var(--a-rgb),.2);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);transition:transform .2s,border-color .2s,box-shadow .2s}
+.ps-ai-fab:hover,.ps-ai-fab.on{transform:translateY(-3px);border-color:var(--a);box-shadow:0 10px 30px rgba(0,0,0,.42),0 0 26px rgba(var(--a-rgb),.35)}
+.ps-ai-fab-core{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(var(--a-rgb),.17);color:var(--a)}
+.ps-ai-fab-core .ps-ico{width:22px;height:22px}
+.ps-ai-fab small{position:absolute;right:-4px;bottom:-5px;padding:3px 6px;border-radius:99px;background:var(--a);color:#fff;font:800 9px/1 Inter,system-ui,sans-serif;border:2px solid #080d18}
+.ps-ai-fab-orbit{position:absolute;inset:-5px;border:1px solid rgba(var(--a-rgb),.28);border-radius:23px;pointer-events:none}
+@media(max-width:650px){
+  .ps-ai-fab{right:19px;bottom:calc(91px + env(safe-area-inset-bottom));width:48px;height:48px;border-radius:16px}
+  .ps-ai-fab-core{width:29px;height:29px;border-radius:10px}
+  .ps-ai-fab-core .ps-ico{width:19px;height:19px}
+}
+
+/* Account avatar opens an anchored account popover; sign out stays on the current site. */
+.ps-account-wrap{position:relative;display:flex;align-items:center;gap:7px}
+.ps-account-trigger{width:38px;height:38px;padding:2px;border-radius:50%;border:1px solid rgba(var(--a-rgb),.5);background:rgba(var(--a-rgb),.10);display:grid;place-items:center;cursor:pointer}
+.ps-account-trigger .ps-av{width:30px;height:30px}
+.ps-account-trigger:hover,.ps-account-trigger[aria-expanded="true"]{border-color:var(--a);box-shadow:0 0 0 3px rgba(var(--a-rgb),.12)}
+.ps-account-menu{position:absolute;right:0;top:calc(100% + 11px);width:min(270px,calc(100vw - 24px));padding:10px;border:1px solid rgba(var(--a-rgb),.34);border-radius:17px;background:rgba(9,13,24,.98);box-shadow:0 18px 55px rgba(0,0,0,.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);opacity:0;visibility:hidden;transform:translateY(-6px);transition:.18s;z-index:100010}
+.ps-account-menu.open{opacity:1;visibility:visible;transform:none}
+.ps-account-menu-user{display:flex;align-items:center;gap:10px;padding:9px 8px 12px;margin-bottom:5px;border-bottom:1px solid rgba(var(--a-rgb),.18);color:#fff}
+.ps-account-menu-user .ps-av{width:38px;height:38px}
+.ps-account-menu-user>span:last-child{display:flex;flex-direction:column;min-width:0}
+.ps-account-menu-user b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-account-menu-user small{font-size:10px;color:var(--s-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-account-menu>a,.ps-account-menu>button{width:100%;display:flex;align-items:center;gap:10px;padding:11px 10px;border:0;border-radius:11px;background:transparent;color:#eef3ff;text-decoration:none;font:600 13px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
+.ps-account-menu>a:hover,.ps-account-menu>button:hover{background:rgba(var(--a-rgb),.12)}
+.ps-account-menu .ps-ico{width:18px;height:18px;color:var(--a)}
+.ps-account-menu>button{color:#ff8b98}
+.ps-account-menu>button .ps-ico{color:#ff8b98}
+.ps-account-menu>button:disabled{opacity:.5;cursor:wait}
+
+/* V5: dismissible AI shortcut and richer account settings */
+.ps-ai-dismiss{position:fixed;z-index:100001;right:12px;bottom:68px;width:21px;height:21px;border:1px solid rgba(var(--a-rgb),.55);border-radius:50%;background:#111a2c;color:#fff;font-size:17px;line-height:17px;padding:0;display:grid;place-items:center;cursor:pointer;box-shadow:0 3px 12px #0008}
+.ps-ai-fab[hidden],.ps-ai-dismiss[hidden],.ps-ai-restore[hidden]{display:none!important}
+.ps-ai-restore{display:block;width:100%;margin:7px 0;padding:8px 10px;border:1px solid rgba(var(--a-rgb),.35);border-radius:10px;background:rgba(var(--a-rgb),.09);color:#fff;font:600 12px Inter,system-ui,sans-serif;cursor:pointer}
+.ps-settings-music{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0}
+.ps-settings-music>div:first-child{display:grid;gap:3px;min-width:0}
+.ps-settings-music small,.ps-api-balance small{font-size:9px;letter-spacing:.12em;color:#9aa8c0;font-weight:800}
+.ps-settings-music b{font-size:12px;color:#f5f7ff;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-settings-music-controls{display:flex;gap:5px}
+.ps-settings-music-controls button{width:29px;height:29px;border-radius:9px;border:1px solid rgba(var(--a-rgb),.35);background:rgba(var(--a-rgb),.10);color:#fff;font-weight:800;cursor:pointer}
+.ps-api-settings{display:grid;gap:9px;padding:2px 0 10px}
+.ps-api-balance{display:grid;gap:2px;padding:10px;border-radius:12px;background:rgba(var(--a-rgb),.10);border:1px solid rgba(var(--a-rgb),.25)}
+.ps-api-balance strong{font-size:24px;line-height:1.1;color:#fff}
+.ps-api-shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.ps-api-shortcuts button{padding:8px 7px;border:1px solid rgba(var(--a-rgb),.25);border-radius:9px;background:rgba(255,255,255,.035);color:#eaf0ff;font-size:11px;font-weight:700;cursor:pointer}
+.ps-api-shortcuts button:last-child{grid-column:1/-1}
+.ps-api-history-head,.ps-api-keys-head{font-size:11px;font-weight:800;color:#eaf0ff;margin-top:2px}
+.ps-api-history,.ps-api-keys{display:grid;gap:5px;color:#aab6cc;font-size:11px}
+.ps-api-row{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.035)}
+.ps-api-row b{color:#fff}.ps-api-row code{font-size:10px;color:var(--a)}
+.ps-api-settings small{font-size:10px;color:#9aa8c0}
+@media(max-width:650px){.ps-ai-dismiss{right:12px;bottom:calc(132px + env(safe-area-inset-bottom))}.ps-settings-pop{max-height:72vh;overflow:auto}}
+
+.psb-settings{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid rgba(var(--a-rgb),.28);background:rgba(255,255,255,.04);color:var(--s-text);display:grid;place-items:center;cursor:pointer;padding:0;transition:.2s}
+.psb-settings:hover{border-color:var(--a);color:var(--a);background:rgba(var(--a-rgb),.1)}
+.psb-settings .ps-ico{width:20px;height:20px}
+@media(max-width:650px){.psb-settings{display:none!important}}
+
+/* PASIYA Premium Cyber Ecosystem — shared visual layer */
+:root{--px-bg:#070b18;--px-panel:rgba(13,21,42,.78);--px-line:rgba(119,155,255,.17);--px-cyan:#55e7ff;--px-violet:#9b83ff;--px-green:#55f0b0;--px-shadow:0 24px 70px rgba(0,0,0,.32)}
+html{scroll-behavior:smooth;scroll-padding-top:92px}body{background-color:var(--px-bg)}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 12% 8%,rgba(50,112,255,.14),transparent 36%),radial-gradient(ellipse at 88% 22%,rgba(151,75,255,.12),transparent 32%),linear-gradient(rgba(100,150,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(100,150,255,.035) 1px,transparent 1px);background-size:auto,auto,42px 42px,42px 42px;mask-image:linear-gradient(to bottom,#000,transparent 90%)}
+/* Shared shell */
+.ps-topbar,.ps-header,.ps-nav,.ps-drawer,.ps-menu,.ps-player{backdrop-filter:blur(22px) saturate(145%)}
+.ps-topbar,.ps-header{border-color:var(--px-line)!important;box-shadow:0 12px 38px rgba(0,0,0,.2)}
+.ps-drawer,.ps-menu{border-color:var(--px-line)!important;box-shadow:var(--px-shadow)}
+.ps-links a,.ps-nav a,.ps-drawer a{transition:transform .28s cubic-bezier(.2,.8,.2,1),background .28s,border-color .28s,box-shadow .28s!important}
+.ps-links a:hover,.ps-nav a:hover,.ps-drawer a:hover{transform:translateX(5px);box-shadow:0 8px 24px rgba(70,145,255,.12)}
+/* Universal controls / panels on all local apps */
+button,.btn,.tab,.link-btn,[role=button]{transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s,border-color .24s,filter .24s!important}
+button:hover,.btn:hover,.tab:hover,.link-btn:hover,[role=button]:hover{filter:brightness(1.12);box-shadow:0 9px 28px rgba(72,150,255,.18)}
+button:active,.btn:active,.tab:active,.link-btn:active,[role=button]:active{transform:scale(.97)!important}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--px-cyan)!important;outline-offset:3px}
+.card,.link-card,.skill,.comment-box,.about-card,.panel,.welcome,.composer,.controls,.preview-col{transition:transform .32s cubic-bezier(.2,.8,.2,1),border-color .32s,box-shadow .32s,background .32s}
+.card:hover,.panel:hover{border-color:rgba(85,231,255,.3)!important;box-shadow:0 18px 48px rgba(0,0,0,.25),0 0 28px rgba(65,140,255,.08)}
+input,textarea,select{transition:border-color .2s,box-shadow .2s,background .2s!important}
+/* OFC homepage */
+.container{max-width:900px!important}.profile{position:relative}.profile:after{content:"PASIYA / DIGITAL ECOSYSTEM";display:inline-flex;align-items:center;gap:8px;margin-top:24px;padding:8px 13px;border:1px solid rgba(85,231,255,.18);border-radius:999px;background:rgba(85,231,255,.045);color:#83cddd;font-size:9px;font-weight:800;letter-spacing:2px;box-shadow:0 0 30px rgba(85,231,255,.06)}
+.link-card{position:relative;overflow:hidden;isolation:isolate;min-height:86px!important;border-color:rgba(125,160,255,.18)!important;background:linear-gradient(135deg,rgba(17,29,58,.86),rgba(9,15,31,.88))!important;box-shadow:inset 0 1px rgba(255,255,255,.04),0 12px 30px rgba(0,0,0,.13)!important}
+.link-card:before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;background:linear-gradient(110deg,transparent 15%,rgba(85,231,255,.12),transparent 70%);transform:translateX(-70%);transition:transform .65s,opacity .35s}
+.link-card:hover{transform:translateY(-7px) scale(1.012)!important;border-color:rgba(85,231,255,.48)!important;box-shadow:0 22px 45px rgba(0,0,0,.28),0 0 26px rgba(85,231,255,.1)!important}
+.link-card:hover:before{opacity:1;transform:translateX(70%)}.link-card .icon{box-shadow:0 0 22px rgba(85,231,255,.1)}
+.skill{border-color:rgba(125,160,255,.16)!important;background:linear-gradient(140deg,rgba(20,31,59,.7),rgba(10,16,33,.7))!important}.skill:hover{transform:translateY(-6px)!important;box-shadow:0 16px 35px rgba(0,0,0,.24),0 0 22px rgba(85,231,255,.1)!important}
+.about-card{border-color:rgba(85,231,255,.2)!important;background:linear-gradient(120deg,rgba(44,103,180,.14),rgba(108,75,190,.1))!important;box-shadow:var(--px-shadow)}
+/* Fake terminal: clearly a visual demo, no real shell execution */
+.ps-terminal{position:relative;margin:34px 0 10px;overflow:hidden;border:1px solid rgba(85,231,255,.24);border-radius:20px;background:linear-gradient(145deg,rgba(7,14,30,.97),rgba(11,19,39,.95));box-shadow:0 24px 70px rgba(0,0,0,.32),0 0 36px rgba(57,151,255,.08);text-align:left}
+.ps-terminal:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 25%,rgba(85,231,255,.035),transparent 72%)}
+.ps-terminal-head{display:flex;align-items:center;gap:8px;padding:14px 17px;border-bottom:1px solid rgba(130,170,255,.13);background:rgba(255,255,255,.025)}.ps-term-dots{display:flex;gap:6px}.ps-term-dots i{width:8px;height:8px;border-radius:50%;background:#ff6b7b}.ps-term-dots i:nth-child(2){background:#ffc45e}.ps-term-dots i:nth-child(3){background:#54e6a8}.ps-term-title{margin-left:5px;color:#8ca6c8;font:700 10px/1.2 ui-monospace,monospace;letter-spacing:1.3px}.ps-term-live{margin-left:auto;color:#61e8b0;font:700 9px ui-monospace,monospace}.ps-terminal-body{padding:18px 20px 20px;font:12px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace;color:#b7c9e6}.ps-term-line{display:flex;flex-wrap:wrap;gap:8px}.ps-term-prompt{color:#5be8c0}.ps-term-command{color:#72dfff}.ps-term-output{padding-left:18px;color:#91a8ca}.ps-term-output strong{color:#b99cff}.ps-term-cursor{display:inline-block;width:7px;height:14px;margin-left:4px;vertical-align:-2px;background:#5be8c0;animation:psTermBlink .85s steps(2) infinite}.ps-term-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.ps-term-chip{padding:7px 10px!important;border:1px solid rgba(85,231,255,.18)!important;border-radius:9px!important;background:rgba(85,231,255,.055)!important;color:#8eeaff!important;font:700 10px ui-monospace,monospace!important;cursor:pointer}.ps-term-chip:hover{border-color:rgba(85,231,255,.5)!important;transform:translateY(-2px)!important}.ps-term-note{margin-top:12px;color:#607897;font:9px/1.5 Inter,sans-serif;letter-spacing:.3px}
+@keyframes psTermBlink{50%{opacity:0}}
+/* Robust reveal: content stays visible if scripts/observers fail */
+.reveal{opacity:1!important;transform:none!important}.ps-reveal-ready .reveal{opacity:0!important;transform:translateY(24px)!important;transition:opacity .72s ease,transform .72s cubic-bezier(.2,.8,.2,1)!important}.ps-reveal-ready .reveal.visible{opacity:1!important;transform:translateY(0)!important}
+/* App-specific layouts */
+.wrap{max-width:1120px!important}.hero,.welcome{position:relative}.hero h1,.wrap>div>h1{letter-spacing:-.04em}.card{border-radius:20px!important}.layout{gap:20px!important}
+@media(max-width:650px){.ps-terminal-body{padding:15px;font-size:11px}.ps-terminal{margin-top:26px}.link-card:hover,.skill:hover{transform:translateY(-3px)!important}.container{padding-bottom:55px!important}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.ps-reveal-ready .reveal{opacity:1!important;transform:none!important}}

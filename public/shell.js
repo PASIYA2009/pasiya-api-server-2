@@ -16,7 +16,7 @@
     { k: 'api', n: 'Pasiya API', t: 'API', p: '/api', ic: 'bolt', sub: 'Developer platform' },
     { k: 'qr', n: 'Pasiya QR', t: 'QR', p: '/qr', ic: 'qr', sub: 'QR editor', tag: 'NEW' },
     { k: 'ai', n: 'Pasiya AI', t: 'AI', p: '/ai', ic: 'ai', sub: 'Chat, image, video', tag: 'NEW' },
-    { k: 'papers', n: 'Pasiya Papers', t: 'Past Papers', p: '/pastpapers', ic: 'book', sub: 'Past papers' },
+    { k: 'papers', n: 'Pasiya Papers', t: 'Past Papers', p: 'https://pastpaper-pro.vercel.app', ic: 'book', sub: 'Past papers' },
     { k: 'bot', n: 'Pasiya Bot', t: 'Bot', p: '/bot', ic: 'bot', sub: 'WhatsApp bot' }
   ];
   function detectRole() {
@@ -33,7 +33,7 @@
 
   var FB = { apiKey: 'AIzaSyCPZAmh7zUmU24aRtDvhGKXydh8DCDSaxk', authDomain: 'pasiya-api.firebaseapp.com', projectId: 'pasiya-api', storageBucket: 'pasiya-api.firebasestorage.app', messagingSenderId: '1074532195422', appId: '1:1074532195422:web:3a1f26e066ad5165e3a8cf' };
   var WA = 'https://wa.me/94741500792';
-  var SOCIAL = [['WhatsApp', WA, 'wa']]; // add more: ['Telegram', 'https://t.me/yourname', 'tg']
+  var SOCIAL = []; // add more: ['Telegram', 'https://t.me/yourname', 'tg']
   var LS = { get: function (k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   var $ = function (s, r) { return (r || D).querySelector(s); }, $$ = function (s, r) { return [].slice.call((r || D).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -50,14 +50,14 @@
     chat: '<path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6A8 8 0 1121 12z"/>', globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>', pin: '<path d="M12 21s7-6 7-11a7 7 0 10-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', term: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/>', head: '<path d="M4 14v-2a8 8 0 0116 0v2M4 14a2 2 0 002 2h1v-5H6a2 2 0 00-2 2zM20 14a2 2 0 01-2 2h-1v-5h1a2 2 0 012 2z"/>', hist: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     wa: '<path d="M20 12a8 8 0 01-11.8 7L3 20.5l1.6-5A8 8 0 1120 12z"/><path d="M9 9c0 3 3 6 6 6l1.2-1.4-2-1-1 .6c-.8-.4-1.6-1.2-2-2l.6-1-1-2z"/>', tg: '<path d="M21 4L3 11l6 2 2 6 3-4 5 4z"/><path d="M9 13l8-6"/>',
-    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', note: '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>', shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>', settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1-1.7 1.7-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5v.2h-2.4v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1L8 17l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H6.7v-2.4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9L8 8.6l1.7-1.7.1.1a1.7 1.7 0 001.9.3 1.7 1.7 0 001-1.5v-.2h2.4v.2a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1 1.7 1.7-.1.1a1.7 1.7 0 00-.3 1.9 1.7 1.7 0 001.5 1h.2V14h-.2a1.7 1.7 0 00-1.5 1z"/>', x: '<path d="M6 6l12 12M18 6L6 18"/>', note: '<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>', shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>'
   };
   var ico = function (n) { return '<svg class="ps-ico" viewBox="0 0 24 24" aria-hidden="true">' + (IC[n] || '') + '</svg>'; };
   var PLAY_I = '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>', PAUSE_I = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
   function logo(id) { return '<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a)"/><stop offset="1" style="stop-color:var(--b)"/></linearGradient></defs><path d="M32 3l25 14.5v29L32 61 7 46.5v-29z" fill="#0b1220" stroke="url(#' + id + ')" stroke-width="3"/><path d="M24 46V19h12a8.5 8.5 0 010 17H24" fill="none" stroke="url(#' + id + ')" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
   // ---------- theme accent (shared by every site) ----------
-  var ACCENTS = [['blue', '#3b9cf5', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber'], ['red', '#f04b5b', 'Red'], ['pink', '#ec4899', 'Pink'], ['cyan', '#22d3ee', 'Cyan'], ['lime', '#84cc16', 'Lime']];
+  var ACCENTS = [['red', '#f04b5b', 'Red'], ['blue', '#3b9cf5', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber'], ['pink', '#ec4899', 'Pink'], ['cyan', '#22d3ee', 'Cyan'], ['lime', '#84cc16', 'Lime']];
   var ACC_IDS = ACCENTS.map(function (x) { return x[0]; });
   // admin default colour (Admin Panel > Default theme): used ONLY while the visitor has not picked a colour themselves
   function applyDefaultAccent(a) {
@@ -73,9 +73,9 @@
     D.dispatchEvent(new CustomEvent('ps:accent', { detail: a }));
   }
   function renderDots() {
-    var cur = H.dataset.accent || 'blue';
+    var cur = H.dataset.accent || 'red';
     $$('[data-ps-dots]').forEach(function (el) {
-      el.innerHTML = '<div class="ps-theme"><span>' + ico('palette') + 'Theme</span><div class="ps-dots">' + ACCENTS.map(function (x) { return '<button type="button" class="ps-dot' + (x[0] === cur ? ' on' : '') + '" data-a="' + x[0] + '" style="--c:' + x[1] + '" aria-label="' + x[2] + ' theme"></button>'; }).join('') + '</div></div>';
+      el.innerHTML = '<div class="ps-theme"><span>' + ico('palette') + 'Settings</span><div class="ps-dots">' + ACCENTS.map(function (x) { return '<button type="button" class="ps-dot' + (x[0] === cur ? ' on' : '') + '" data-a="' + x[0] + '" style="--c:' + x[1] + '" aria-label="' + x[2] + ' theme"></button>'; }).join('') + '</div></div>';
     });
   }
   D.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.ps-dot'); if (b) setAccent(b.dataset.a); });
@@ -100,6 +100,7 @@
   function ofcBase() { return String(P.cfg.ofcOrigin || '').replace(/\/+$/, ''); }
   function isDirect() { if (ROLE !== 'api') return false; var o = ofcBase(); return o ? new URL(o).host !== location.host : /\.workers\.dev$/i.test(location.hostname); }
   function link(path) { // returns {href, x} ; x = needs hand-off
+    if (/^https?:\/\//i.test(path)) return { href: path }; // external site (Past Papers) opens directly, no proxy
     if (ROLE === 'api' && path === '/api') return { href: isDirect() ? '/' : '/api' };
     if (isDirect()) return ofcBase() ? { href: ofcBase() + path, x: 1 } : null;
     return { href: path };
@@ -108,7 +109,7 @@
 
   function renderSites() {
     $$('[data-ps-sites]').forEach(function (el) {
-      el.innerHTML = '<div class="ps-sec">PASIYA SITES</div><nav class="ps-links">' + SITES.map(function (s) {
+      el.innerHTML = '<div class="ps-sec">OTHER SERVICES</div><nav class="ps-links">' + SITES.map(function (s) {
         var l = link(s.p); if (!l) return '';
         return '<a href="' + esc(l.href) + '"' + (l.x ? ' data-ps-x="1"' : '') + (s.k === ROLE ? ' class="on" aria-current="page"' : '') + '>' + ico(s.ic) + '<span>' + esc(s.n) + '</span>' + (s.tag ? '<em class="ps-tag">' + s.tag + '</em>' : '') + '</a>';
       }).join('') + '</nav>';
@@ -117,6 +118,13 @@
       el.innerHTML = SITES.map(function (s) { var l = link(s.p); if (!l) return ''; return '<a href="' + esc(l.href) + '"' + (l.x ? ' data-ps-x="1"' : '') + (s.k === ROLE ? ' class="on" aria-current="page"' : '') + '>' + esc(s.t) + '</a>'; }).join('');
     });
     $$('[data-ps-brandlink]').forEach(function (a) { var l = link('/'); a.setAttribute('href', ROLE === 'ofc' ? '#home' : (l ? l.href : '/')); if (l && l.x) a.dataset.psX = '1'; });
+    var aiLink = link('/ai');
+    var aiButton = $('.ps-ai-fab');
+    if (aiButton) {
+      aiButton.href = aiLink ? aiLink.href : (ofcBase() ? ofcBase() + '/ai' : '/ai');
+      if (aiLink && aiLink.x) aiButton.dataset.psX = '1'; else delete aiButton.dataset.psX;
+    }
+    $$('.ps-ai-fab').forEach(function (a) { a.classList.toggle('on', ROLE === 'ai'); });
   }
   function renderAdmin() {
     $$('[data-ps-admin]').forEach(function (el) {
@@ -153,11 +161,34 @@
     });
     $$('[data-ps-out]').forEach(function (el) { el.hidden = !P.user; if (!el.dataset.b) { el.dataset.b = 1; el.innerHTML = '<div class="ps-sec"></div><button type="button" class="ps-btn danger full" data-ps-signout>' + ico('out') + 'Sign Out</button>'; } });
     $$('[data-ps-top]').forEach(function (el) {
-      el.innerHTML = P.user ? '<a class="ps-chip coins" href="' + accountHash('wallet') + '" title="Coin wallet">' + ico('coin') + '<span data-ps-coins>' + coins() + '</span>' + avatar() + '</a>' : '<a class="ps-chip login" href="' + loginUrl('login') + '">Log in</a>';
+      el.innerHTML = P.user
+        ? '<div class="ps-account-wrap"><a class="ps-chip coins" href="' + accountHash('wallet') + '" title="Coin wallet">' + ico('coin') + '<span data-ps-coins>' + coins() + '</span></a>' +
+          '<button type="button" class="ps-account-trigger" id="psAccountTrigger" aria-label="Account options" aria-expanded="false">' + avatar() + '</button>' +
+          '<div class="ps-account-menu" id="psAccountMenu" aria-hidden="true"><div class="ps-account-menu-user">' + avatar() + '<span><b>' + esc(nameOf()) + '</b><small>' + esc((P.user.email || 'Signed in')) + '</small></span></div>' +
+          '<a href="' + accountHash('profile') + '">' + ico('user') + '<span>My Account</span></a>' +
+          '<button type="button" data-ps-signout>' + ico('out') + '<span>Sign Out</span></button></div></div>'
+        : '<a class="ps-chip login" href="' + loginUrl('login') + '">Log in</a>';
     });
   }
   D.addEventListener('click', function (e) {
-    if (e.target.closest && e.target.closest('[data-ps-signout]') && P.auth) P.A.signOut(P.auth).then(function () { location.reload(); });
+    var accountTrigger = e.target.closest && e.target.closest('#psAccountTrigger');
+    var accountMenu = $('#psAccountMenu');
+    if (accountTrigger && accountMenu) {
+      e.stopPropagation();
+      var accountOpen = accountMenu.classList.toggle('open');
+      accountMenu.setAttribute('aria-hidden', String(!accountOpen));
+      accountTrigger.setAttribute('aria-expanded', String(accountOpen));
+      return;
+    }
+    if (accountMenu && !accountMenu.contains(e.target)) {
+      accountMenu.classList.remove('open'); accountMenu.setAttribute('aria-hidden', 'true');
+      var trigger = $('#psAccountTrigger'); if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+    if (e.target.closest && e.target.closest('[data-ps-signout]') && P.auth && P.A) {
+      var signoutButtons = $$('[data-ps-signout]'); signoutButtons.forEach(function (b) { b.disabled = true; });
+      P.A.signOut(P.auth).then(function () { P.user = null; P.me = null; renderAll(); location.reload(); })
+        .catch(function () { signoutButtons.forEach(function (b) { b.disabled = false; }); });
+    }
     var a = e.target.closest && e.target.closest('a[data-ps-x]');
     if (a && P.user && P.auth && P.auth.currentUser) { e.preventDefault(); handoff(a.href); }
   });
@@ -192,10 +223,12 @@
   function setCoins(n) {
     if (!P.me || typeof n !== 'number' || P.me.coins === n) return;
     P.me.coins = n; paintCoins(); D.dispatchEvent(new CustomEvent('ps:coins', { detail: { coins: n } }));
+    if (P.refreshSettings) P.refreshSettings();
   }
   P.setMe = function (m) { // a page that already fetched /api/me hands it over (keeps the chip in sync, no extra request)
     if (!m) return; var old = P.me; P.me = m;
     if (!old || old.role !== m.role || old.username !== m.username) renderAll(); else if (old.coins !== m.coins) { old.coins = m.coins; paintCoins(); }
+    if (P.refreshSettings) P.refreshSettings();
   };
   function pollCoins() {
     if (!P.user || !P.auth || !P.auth.currentUser || !P.me || isAdmin() || D.hidden) return;
@@ -243,11 +276,12 @@
     b.classList.add('ps-hasbar');
     bar = D.createElement('header'); bar.className = 'psb'; bar.id = 'psb';
     bar.innerHTML =
-      '<button type="button" class="psb-menu" id="psMenuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="psd">' + ico('menu') + '</button>' +
+      '<button type="button" class="psb-menu" id="psDesktopMenu" aria-label="Open menu" title="Menu">' + ico('menu') + '</button>' +
       '<a class="psb-brand" data-ps-brandlink href="/" aria-label="' + esc(SITE.n) + '">' + '<span class="psb-logo">' + logo('psLgBar') + '</span><span><b>' + esc(SITE.n.toUpperCase()) + '</b><small>by Pasidu Eshan</small></span></a>' +
-      '<nav class="psb-tabs" data-ps-tabs aria-label="Pasiya sites"></nav>' +
+      '<nav class="psb-tabs" data-ps-tabs aria-label="Other services"></nav>' +
       '<div class="psb-right"><div class="psb-time" id="psTime" aria-label="Sri Lanka time"><span class="d"></span><span class="t"></span></div>' +
       '<button type="button" class="psb-music" id="psMusicBtn" aria-label="Play music" title="Music">' + ico('note') + '</button>' +
+      '<button type="button" class="psb-settings" id="psTopSettings" aria-label="Open settings" title="Settings">' + ico('settings') + '</button>' +
       '<span class="psb-acct" data-ps-top></span></div>';
     back = D.createElement('div'); back.className = 'psd-back'; back.id = 'psdBack';
     drawer = D.createElement('aside'); drawer.className = 'psd'; drawer.id = 'psd'; drawer.setAttribute('aria-label', 'Main menu'); drawer.setAttribute('aria-hidden', 'true');
@@ -281,11 +315,135 @@
       '<div data-ps-dots></div><div data-ps-out hidden></div>';
     b.insertBefore(drawer, b.firstChild); b.insertBefore(back, b.firstChild); b.insertBefore(bar, b.firstChild);
 
+    // Mobile service dock: compact, fixed navigation shared by every PASIYA page.
+    var dock = D.createElement('nav'); dock.className = 'ps-mobile-dock'; dock.id = 'psMobileDock';
+    var dockItems = [
+      { k: 'ofc', t: 'Home', p: '/', ic: 'home' },
+      { k: 'api', t: 'API', p: '/api', ic: 'bolt' },
+      { k: 'bot', t: 'WhatsApp', p: '/bot', ic: 'bot' },
+      { k: 'papers', t: 'Papers', p: 'https://pastpaper-pro.vercel.app', ic: 'book' }
+    ];
+    dock.innerHTML = dockItems.map(function (it) {
+      var l = link(it.p); if (!l) return '';
+      return '<a class="ps-md-item' + (it.k === ROLE ? ' on' : '') + '" href="' + esc(l.href) + '"' +
+        (l.x ? ' data-ps-x="1"' : '') + (it.k === ROLE ? ' aria-current="page"' : '') + '>' +
+        ico(it.ic) + '<span>' + esc(it.t) + '</span></a>';
+    }).join('') +
+      '<button type="button" class="ps-md-item ps-md-settings" id="psDockSettings" aria-label="Open settings">' +
+      ico('palette') + '<span>Settings</span></button>';
+    b.appendChild(dock);
+    var settingsPop = D.createElement('div');
+    settingsPop.className = 'ps-settings-pop';
+    settingsPop.id = 'psSettingsPop';
+    settingsPop.setAttribute('aria-hidden', 'true');
+    settingsPop.innerHTML = '<div class="ps-settings-title">' + ico('settings') + '<b>Settings · ' + esc(SITE.n) + '</b><button type="button" class="ps-settings-close" aria-label="Close settings">×</button></div>' +
+      (ROLE === 'api' ? '<section class="ps-api-settings" id="psApiSettings"><div class="ps-api-balance"><small>YOUR COIN BALANCE</small><strong id="psApiCoins">—</strong></div><div class="ps-api-shortcuts"><button type="button" data-go="wallet">Coin wallet</button><button type="button" data-go="history">Coin history</button><button type="button" data-go="profile">API keys & profile</button></div><div class="ps-api-history-head">Recent coin activity</div><div class="ps-api-history" id="psApiHistory">Sign in to view coin history.</div><div class="ps-api-keys-head">API keys</div><div class="ps-api-keys" id="psApiKeys">Sign in to view your API keys.</div></section><div class="ps-settings-divider"></div>' : '') +
+      '<div class="ps-settings-page" data-ps-settings-page></div><div class="ps-settings-divider"></div><div class="ps-settings-music"><div><small>BACKGROUND MUSIC</small><b id="psSettingsTrack">PASIYA Music Player</b></div><div class="ps-settings-music-controls"><button type="button" data-ps-music="prev" aria-label="Previous song">‹</button><button type="button" data-ps-music="play" aria-label="Play or pause">▶</button><button type="button" data-ps-music="next" aria-label="Next song">›</button></div></div><div class="ps-settings-divider"></div><div class="ps-settings-theme-label">' + ico('palette') + '<span>Theme colour</span></div><div data-ps-dots></div>';
+    b.appendChild(settingsPop);
+    var aiFab = D.createElement('a');
+    aiFab.className = 'ps-ai-fab'; aiFab.href = '/ai';
+    aiFab.setAttribute('aria-label', 'Open PASIYA AI'); aiFab.title = 'PASIYA AI';
+    aiFab.innerHTML = '<span class="ps-ai-fab-orbit"></span><span class="ps-ai-fab-core">' + ico('bot') + '</span><small>AI</small>';
+    b.appendChild(aiFab);
+    var aiDismiss = D.createElement('button');
+    aiDismiss.type = 'button'; aiDismiss.className = 'ps-ai-dismiss'; aiDismiss.setAttribute('aria-label', 'Hide AI shortcut'); aiDismiss.textContent = '×';
+    b.appendChild(aiDismiss);
+    function setAiShortcutVisible(show) {
+      aiFab.hidden = !show; aiDismiss.hidden = !show;
+      if (restoreAi) restoreAi.hidden = show;
+      try { LS.set('pasiya_ai_shortcut_hidden', show ? '0' : '1'); } catch (e) {}
+    }
+    var aiHidden = LS.get('pasiya_ai_shortcut_hidden') === '1';
+    setAiShortcutVisible(!aiHidden);
+    aiDismiss.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); setAiShortcutVisible(false); });
+    var restoreAi = D.createElement('button');
+    restoreAi.type = 'button'; restoreAi.className = 'ps-ai-restore'; restoreAi.textContent = 'Show AI shortcut';
+    restoreAi.hidden = !aiHidden;
+    restoreAi.addEventListener('click', function () { setAiShortcutVisible(true); restoreAi.hidden = true; });
+    b.appendChild(restoreAi);
+    var settingsTitle = $('.ps-settings-title', settingsPop);
+    if (settingsTitle) settingsPop.appendChild(restoreAi);
+    function toggleSettings(e) {
+      if (e) e.stopPropagation();
+      var opened = settingsPop.classList.toggle('open');
+      settingsPop.setAttribute('aria-hidden', String(!opened));
+      if (opened && P.refreshSettings) P.refreshSettings();
+    }
+    $('#psDockSettings').addEventListener('click', toggleSettings);
+    var topSettings = $('#psTopSettings');
+    if (topSettings) topSettings.addEventListener('click', toggleSettings);
+    $('.ps-settings-close', settingsPop).addEventListener('click', function () {
+      settingsPop.classList.remove('open'); settingsPop.setAttribute('aria-hidden', 'true');
+    });
+    $$('[data-ps-music]', settingsPop).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var target = btn.getAttribute('data-ps-music');
+        var original = target === 'prev' ? $('#psPrev') : target === 'next' ? $('#psNext') : $('#psPlay');
+        if (original) original.click();
+      });
+    });
+    var trackNode = $('#psTitle');
+    var settingsTrack = $('#psSettingsTrack');
+    if (trackNode && settingsTrack && window.MutationObserver) {
+      new MutationObserver(function () { settingsTrack.textContent = trackNode.textContent || 'PASIYA Music Player'; }).observe(trackNode, { childList: true, characterData: true, subtree: true });
+      settingsTrack.textContent = trackNode.textContent || 'PASIYA Music Player';
+    }
+    function refreshApiSettings() {
+      if (ROLE !== 'api') return;
+      var coinNode = $('#psApiCoins'), historyNode = $('#psApiHistory'), keysNode = $('#psApiKeys');
+      if (coinNode) coinNode.textContent = P.me ? (isAdmin() ? '∞' : (typeof P.me.coins === 'number' ? P.me.coins.toLocaleString('en-US') : '—')) : 'Sign in';
+      if (!P.user || !P.auth || !P.auth.currentUser) {
+        if (historyNode) historyNode.textContent = 'Sign in to view coin history.';
+        if (keysNode) keysNode.textContent = 'Sign in to view your API keys.';
+        return;
+      }
+      P.auth.currentUser.getIdToken().then(function (token) {
+        return Promise.all([
+          fetch('/api/coins/history', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }),
+          fetch('/api/keys', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+        ]);
+      }).then(function (results) {
+        if (historyNode) {
+          var items = results[0] && results[0].items || [];
+          historyNode.innerHTML = items.slice(0, 3).map(function (item) {
+            var amount = Number(item.amount || 0), sign = amount > 0 ? '+' : '';
+            return '<div class="ps-api-row"><span>' + esc(item.reason || 'Coin activity') + '</span><b>' + sign + amount + '</b></div>';
+          }).join('') || '<small>No coin activity yet.</small>';
+        }
+        if (keysNode) {
+          var keys = results[1] && results[1].keys || [];
+          keysNode.innerHTML = keys.slice(0, 2).map(function (key) {
+            return '<div class="ps-api-row"><span>' + esc(key.label || 'API key') + '</span><code>' + esc(key.prefix || 'pasiya_') + '••••</code></div>';
+          }).join('') || '<small>No API key found.</small>';
+        }
+      }).catch(function () {
+        if (historyNode) historyNode.textContent = 'Could not load coin history.';
+        if (keysNode) keysNode.textContent = 'Could not load API keys.';
+      });
+    }
+    settingsPop.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-go]')) {
+        settingsPop.classList.remove('open'); settingsPop.setAttribute('aria-hidden', 'true');
+      }
+    });
+    if (ROLE === 'api') refreshApiSettings();
+    P.refreshSettings = refreshApiSettings;
+    D.addEventListener('click', function (e) {
+      if (!settingsPop.contains(e.target) && !$('#psDockSettings').contains(e.target) && !($('#psTopSettings') && $('#psTopSettings').contains(e.target))) {
+        settingsPop.classList.remove('open'); settingsPop.setAttribute('aria-hidden', 'true');
+      }
+    });
+    D.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { settingsPop.classList.remove('open'); settingsPop.setAttribute('aria-hidden', 'true'); }
+    });
+
     // the page can hand over its own menu links (e.g. the API sections / the portfolio sections)
     var slot = $('[data-ps-page]');
-    if (slot) { slot.hidden = false; $('[data-ps-pagehost]', drawer).appendChild(slot); }
+    if (slot) { slot.hidden = false; $('[data-ps-settings-page]', settingsPop).appendChild(slot); }
+    else { $('[data-ps-settings-page]', settingsPop).innerHTML = '<div class="ps-settings-page-empty">No extra settings for this page</div>'; }
 
-    $('#psMenuBtn').addEventListener('click', function () { openMenu(true); });
+    var desktopMenu = $('#psDesktopMenu');
+    if (desktopMenu) desktopMenu.addEventListener('click', function () { openMenu(true); });
     $('#psdClose').addEventListener('click', function () { openMenu(false); });
     back.addEventListener('click', function () { openMenu(false); });
     D.addEventListener('keydown', function (e) { if (e.key === 'Escape') openMenu(false); });
@@ -298,7 +456,7 @@
     if (on) lastFocus = D.activeElement;
     if (on) $$('.ps-sec,.ps-links a,.psp,.ps-acct,[data-ps-pagehost] .nav', drawer).forEach(function (el, i) { el.style.setProperty('--i', Math.min(i, 14)); });
     drawer.classList.toggle('open', on); back.classList.toggle('open', on); H.classList.toggle('ps-lock', on);
-    drawer.setAttribute('aria-hidden', String(!on)); $('#psMenuBtn').setAttribute('aria-expanded', String(on));
+    drawer.setAttribute('aria-hidden', String(!on));
     if (on) { setTimeout(function () { var c = $('#psdClose'); if (c) c.focus(); }, 60); } else if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} lastFocus = null; }
   }
   // Sri Lanka live time
@@ -335,7 +493,40 @@
     set('psSub', function (e) { e.textContent = !M.ready ? 'Loading\u2026' : !TRACKS.length ? 'No songs added' : M.fails >= TRACKS.length ? 'Songs unavailable' : M.playing ? 'Playing \u00b7 ' + (M.i + 1) + ' / ' + TRACKS.length : M.want && M.blocked ? 'Tap anywhere to start' : 'Paused \u00b7 ' + (M.i + 1) + ' / ' + TRACKS.length; });
     set('psPlay', function (e) { e.innerHTML = M.playing ? PAUSE_I : PLAY_I; e.setAttribute('aria-label', M.playing ? 'Pause music' : 'Play music'); });
     set('psArt', function (e) { e.classList.toggle('on', M.playing); });
+    keepAlive(M.want && !M.yielded && TRACKS.length > 0); setSession();
     set('psMusicBtn', function (e) { e.classList.toggle('on', M.playing); e.setAttribute('aria-label', M.playing ? 'Pause music' : 'Play music'); });
+  }
+  // ---------- background playback: keep the song going when the person leaves the tab / app / locks the phone ----------
+  var KEEP = null, KEEP_URL = '';
+  function keepWav() { // 10 s mono 16-bit, 8 kHz: a 30 Hz tone at about -60 dB (inaudible, but not "silent" so the browser keeps the media session alive)
+    var sr = 8000, n = sr * 10, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf), i;
+    var w = function (o, t) { for (var k = 0; k < t.length; k++) v.setUint8(o + k, t.charCodeAt(k)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+    for (i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.round(Math.sin(2 * Math.PI * 30 * i / sr) * 40), true);
+    return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  }
+  function keepAlive(on) { if (M.native) return; // runs for as long as the person wants music (NOT only while YouTube reports "playing"), otherwise the phone freezes the page the moment YouTube pauses in the background
+    try {
+      if (!KEEP) { KEEP = D.createElement('audio'); KEEP.loop = true; KEEP.preload = 'auto'; KEEP.setAttribute('playsinline', ''); KEEP.setAttribute('aria-hidden', 'true'); KEEP_URL = keepWav(); KEEP.src = KEEP_URL; KEEP.volume = 1; }
+      if (on) { if (KEEP.paused) { var pr = KEEP.play(); if (pr && pr.catch) pr.catch(function () {}); } } else if (!KEEP.paused) KEEP.pause();
+    } catch (e) {}
+  }
+  function resumeIfWanted() { if (M.yielded) return; if (M.ready && M.want && !M.playing && TRACKS.length && M.fails < TRACKS.length) { try { M.yt.playVideo(); } catch (e) {} } }
+  function setSession() { // lock-screen / notification controls (Android, iOS, desktop)
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: trackName(), artist: 'PASIYA OFC', album: 'Cyber Ecosystem', artwork: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }] });
+      navigator.mediaSession.playbackState = (M.playing || (M.want && D.hidden)) ? 'playing' : 'paused';
+    } catch (e) {}
+  }
+  function bindSession() {
+    if (!('mediaSession' in navigator)) return;
+    var h = function (a, f) { try { navigator.mediaSession.setActionHandler(a, f); } catch (e) {} };
+    h('play', function () { plWant(true); LS.set('pasiya_owner', M.tab); resumeIfWanted(); });
+    h('pause', function () { plWant(false); try { M.yt.pauseVideo(); } catch (e) {} });
+    h('nexttrack', function () { plWant(true); plGo(M.i + 1); });
+    h('previoustrack', function () { plWant(true); plGo(M.i - 1); });
   }
   var plWant = function (on) { M.want = on; LS.set('pasiya_music', on ? 'on' : 'off'); };
   function plSave() {
@@ -364,8 +555,21 @@
     if (M.yt && M.yt.loadVideoById) { try { M.want && M.loaded ? M.yt.loadVideoById(list[M.i].id) : M.yt.cueVideoById(list[M.i].id); } catch (e) {} }
     plRender();
   }
+  // Real background play: put mp3 files in /public/music and list them in /public/music/tracks.json  ->  [{ "title": "Song", "url": "/music/song.mp3" }]
+  // ("on": false on a song = switched off from /music-admin.) Those songs play through a normal <audio> element (works with the screen off / other apps open). With no list, the YouTube playlist from /api/music is used.
+  function loadLocal() { // resolves null = no local list (use YouTube); otherwise the songs that are switched ON (can be empty = everything off)
+    return fetch('/music/tracks.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      var l = (Array.isArray(d) ? d : (d && d.tracks)) || [];
+      l = l.filter(function (t) { return t && typeof t.url === 'string' && /^(\/|https:\/\/)/.test(t.url); });
+      if (!l.length) return null;
+      return l.filter(function (t) { return t.on !== false; }).map(function (t) { return { id: t.url, title: t.title || '', url: t.url }; });
+    }).catch(function () { return null; });
+  }
   function loadMusic() {
-    return fetch('/api/music', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { if (d && Array.isArray(d.tracks)) applyTracks(d.tracks); }).catch(function () {}).then(function () {
+    return loadLocal().then(function (loc) {
+      if (loc) { M.native = true; applyTracks(loc); return; } // [] here = every song switched off -> silence, not YouTube
+      return fetch('/api/music', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { if (d && Array.isArray(d.tracks)) applyTracks(d.tracks); });
+    }).catch(function () {}).then(function () {
       var first = !M.loaded; M.loaded = true;
       if (first) { // continue the same song at the same place if the previous page was playing a moment ago
         try {
@@ -373,32 +577,60 @@
           if (ix >= 0) { M.i = ix; M.start = (s.p && Date.now() - s.at < 20000) ? Math.max(0, Math.floor(s.t + (Date.now() - s.at) / 1000)) : 0; }
         } catch (e) {}
       }
-      if (M.pendingInit) { M.pendingInit(); M.pendingInit = null; }
+      if (M.native && !M.yt) initPlayer(); else if (M.pendingInit) { M.pendingInit(); M.pendingInit = null; }
     });
   }
+  function initNative(ev) { // same player interface as YT.Player, driven by an <audio> element
+    var a = D.createElement('audio'); a.preload = 'auto'; a.setAttribute('playsinline', ''); a.style.display = 'none'; D.body.appendChild(a); M.audio = a;
+    var ad = {
+      playVideo: function () { var p = a.play(); if (p && p.catch) p.catch(function () { M.blocked = true; plRender(); }); },
+      pauseVideo: function () { a.pause(); }, stopVideo: function () { a.pause(); a.removeAttribute('src'); },
+      getCurrentTime: function () { return a.currentTime || 0; }, getVideoData: function () { return { title: '' }; },
+      loadVideoById: function (u) { a.src = u; ad.playVideo(); }, cueVideoById: function (u) { a.src = u; }
+    };
+    M.yt = ad;
+    a.addEventListener('playing', function () { ev.onStateChange({ data: 1 }); });
+    a.addEventListener('pause', function () { if (!a.ended) ev.onStateChange({ data: 2 }); });
+    a.addEventListener('ended', function () { ev.onStateChange({ data: 0 }); });
+    a.addEventListener('error', function () { ev.onError(); });
+    var t = TRACKS[M.i]; if (t) { a.src = t.id; if (M.start) a.addEventListener('loadedmetadata', function () { try { a.currentTime = M.start; } catch (e) {} }, { once: true }); }
+    ev.onReady();
+  }
   function initPlayer() {
-    if (!D.getElementById('ytWrap')) { var w = D.createElement('div'); w.id = 'ytWrap'; w.setAttribute('aria-hidden', 'true'); w.innerHTML = '<div id="ytHost"></div>'; D.body.appendChild(w); }
-    M.yt = new YT.Player('ytHost', { width: 200, height: 200, videoId: (TRACKS[M.i] || {}).id, playerVars: { autoplay: M.want ? 1 : 0, controls: 0, playsinline: 1, rel: 0, disablekb: 1, fs: 0, start: M.start || 0, origin: location.origin }, events: {
+    if (M.yt) return;
+    var ev = {
       onReady: function () { M.ready = true; if (M.want && TRACKS.length) { try { M.yt.playVideo(); } catch (e) {} setTimeout(function () { if (!M.playing && M.want) { M.blocked = true; plRender(); } }, 2000); } plRender(); },
       onAutoplayBlocked: function () { M.blocked = true; plRender(); },
       onStateChange: function (e) {
-        if (e.data === 1) { M.playing = true; M.blocked = false; M.fails = 0; LS.set('pasiya_owner', M.tab); try { var t = M.yt.getVideoData().title; if (t && TRACKS[M.i]) M.titles[TRACKS[M.i].id] = t; } catch (x) {} }
-        else if (e.data === 2 || e.data === 5) M.playing = false;
+        if (e.data === 1) { M.playing = true; M.yielded = false; M.blocked = false; M.fails = 0; LS.set('pasiya_owner', M.tab); try { var t = M.yt.getVideoData().title; if (t && TRACKS[M.i]) M.titles[TRACKS[M.i].id] = t; } catch (x) {} }
+        else if (e.data === 2 || e.data === 5) { M.playing = false; if (e.data === 2 && D.hidden && M.want) setTimeout(resumeIfWanted, 250); }
         else if (e.data === 0) { M.playing = false; plGo(M.i + 1); }
         plRender(); plSave();
       },
       onError: function () { M.playing = false; if (++M.fails < TRACKS.length) plGo(M.i + 1); else plRender(); }
-    } });
+    };
+    if (M.native) { initNative(ev); return; }
+    if (!D.getElementById('ytWrap')) { var w = D.createElement('div'); w.id = 'ytWrap'; w.setAttribute('aria-hidden', 'true'); w.innerHTML = '<div id="ytHost"></div>'; D.body.appendChild(w); }
+    M.yt = new YT.Player('ytHost', { width: 200, height: 200, videoId: (TRACKS[M.i] || {}).id, playerVars: { autoplay: M.want ? 1 : 0, controls: 0, playsinline: 1, rel: 0, disablekb: 1, fs: 0, start: M.start || 0, origin: location.origin }, events: ev });
   }
   function bootMusic() {
     D.addEventListener('click', function (e) {
       var t = e.target.closest && e.target.closest('#psPlay,#psMusicBtn,#psNext,#psPrev'); if (!t) return;
       if (t.id === 'psNext') { plWant(true); plGo(M.i + 1); } else if (t.id === 'psPrev') { plWant(true); plGo(M.i - 1); } else plToggle();
     });
-    var kick = function () { if (M.ready && M.want && !M.playing && TRACKS.length) { try { M.yt.playVideo(); } catch (e) {} } };
-    ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) { addEventListener(ev, kick, { passive: true }); });
+    var kick = function () { if (M.want && TRACKS.length) keepAlive(true); if (M.ready && M.want && !M.playing && TRACKS.length) { M.yielded = false; try { M.yt.playVideo(); } catch (e) {} } };
+    // browsers only allow sound after a real gesture: pointerdown / touchstart do NOT count, the "up" / click events do, so listen to all of them (the first tap, scroll-tap or key starts the music at once)
+    ['pointerdown', 'pointerup', 'mouseup', 'touchstart', 'touchend', 'click', 'keydown'].forEach(function (ev) { addEventListener(ev, kick, { passive: true, capture: true }); });
+    addEventListener('load', function () { setTimeout(kick, 300); setTimeout(kick, 2500); }); // try once more when the page + loader finished (works where the browser allows autoplay)
+    bindSession();
+    // leaving the page / app and coming back: carry on (the browser often pauses embedded players in the background)
+    D.addEventListener('visibilitychange', function () { setTimeout(resumeIfWanted, D.hidden ? 300 : 0); setSession(); });
+    // while the app/browser is in the background the embedded player is often paused by the phone: keep nudging it (only if the person never pressed pause)
+    setInterval(function () { if (D.hidden && M.want && M.ready && !M.playing && !M.yielded && TRACKS.length) { keepAlive(true); resumeIfWanted(); } }, 1500);
+    addEventListener('pageshow', function () { setTimeout(resumeIfWanted, 0); });
+    addEventListener('focus', function () { setTimeout(resumeIfWanted, 0); });
     // only one tab plays at a time
-    addEventListener('storage', function (e) { if (e.key === 'pasiya_owner' && e.newValue && e.newValue !== M.tab && M.playing) { try { M.yt.pauseVideo(); } catch (x) {} } });
+    addEventListener('storage', function (e) { if (e.key === 'pasiya_owner' && e.newValue && e.newValue !== M.tab && M.playing) { M.yielded = true; try { M.yt.pauseVideo(); } catch (x) {} } });
     setInterval(function () { if (M.playing) plSave(); }, 1000);
     addEventListener('pagehide', plSave); D.addEventListener('visibilitychange', function () { if (D.hidden) plSave(); });
     setInterval(function () { if (!D.hidden) loadMusic(); }, 30000);
@@ -473,6 +705,7 @@
   //  FOOTER (same on every site: P logo + PASIYA OFC)
   // ====================================================================================
   function renderFooter() {
+    if (ROLE === 'ai') { var old = $('#ps-footer'); if (old) old.remove(); return; } // PASIYA AI is a full-screen app: no footer (other sites keep theirs)
     var el = $('#ps-footer');
     if (!el) { el = D.createElement('footer'); el.id = 'ps-footer'; D.body.appendChild(el); }
     var soc = SOCIAL.map(function (s) { return '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener" aria-label="' + esc(s[0]) + '">' + ico(s[2]) + '</a>'; }).join('');
@@ -480,7 +713,7 @@
     el.innerHTML = '<div class="brand"><span class="logo">' + logo('psLgFoot') + '</span><div><b>PASIYA <em>OFC</em></b><span class="ps-up" id="psUp"><i></i>checking\u2026</span></div></div>' +
       '<p>Pasidu Eshan\'s home for the free PASIYA API, past papers, WhatsApp bot, QR editor and AI tools. One login works everywhere.</p>' +
       '<div class="ps-info"><a href="' + WA + '" target="_blank" rel="noopener"><span class="bx">' + ico('chat') + '</span>WhatsApp support</a><div><span class="bx">' + ico('globe') + '</span>' + esc(location.host) + '</div><div><span class="bx">' + ico('pin') + '</span>Sri Lanka \ud83c\uddf1\ud83c\uddf0</div><div><span class="bx">' + ico('clock') + '</span>24/7 Global Support</div></div>' +
-      '<div class="ps-social">' + soc + '</div>' +
+      (soc ? '<div class="ps-social">' + soc + '</div>' : '') +
       '<div class="ps-copy">\u00a9 ' + new Date().getFullYear() + ' \u00b7 Designed &amp; built by <b>Pasidu Eshan</b></div>';
     fetch('/api/health', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { setUp(d && d.ok); }).catch(function () { setUp(false); });
     function setUp(ok) { var u = $('#psUp'); if (!u) return; u.className = 'ps-up' + (ok ? '' : ' warn'); u.innerHTML = '<i></i>' + (ok ? 'All systems online \u2713' : 'Status unavailable'); }
@@ -509,10 +742,11 @@
     upd();
   }
 
-  function renderAll() { renderDots(); renderSites(); renderAccount(); renderAdmin(); renderAccountLinks(); }
+  function renderAll() { renderDots(); renderSites(); renderAccount(); renderAdmin(); renderAccountLinks(); if (P.refreshSettings) P.refreshSettings(); }
   function start() {
-    H.dataset.accent = LS.get('pasiya_accent') || LS.get('pasiya_def_accent') || H.dataset.accent || 'blue'; loadDefaultAccent();
+    H.dataset.accent = LS.get('pasiya_accent') || LS.get('pasiya_def_accent') || H.dataset.accent || 'red'; loadDefaultAccent();
     if (!$('link[href*="family=Inter"]')) { var l = D.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'; D.head.appendChild(l); }
+    if (!window.__psReveal && ROLE !== 'ofc') { var rv = D.createElement('script'); rv.src = '/_pasiya/reveal.js'; rv.defer = true; D.head.appendChild(rv); }
     updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter(); bootTop();
     fetch('/api/config').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (c) { P.cfg = c || {}; renderAll(); });
     bootAuth();
