@@ -620,3 +620,10 @@ html{background:#070a14} /* no white flash while a page opens (login etc.) */
 .ps-admin-btn:hover{transform:translateY(-2px);border-color:#f472b6}
 .ps-admin-btn svg{width:18px;height:18px;flex:none;color:#f472b6}
 .ps-admin-btn span{flex:1;text-align:left}
+
+/* ===== v6.3: PC AI icon = same look/size as mobile, bottom-right beside the bottom bar ===== */
+@media(min-width:651px){
+  .ps-ai-fab{right:19px;bottom:96px;width:48px;height:48px;border-radius:16px}
+  .ps-ai-fab-core{width:29px;height:29px;border-radius:10px}
+  .ps-ai-fab-core .ps-ico{width:19px;height:19px}
+}
