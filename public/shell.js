@@ -337,7 +337,7 @@
     var dockItems = [
       { k: 'ofc', t: 'Home', p: '/', ic: 'home' },
       { k: 'api', t: 'API', p: '/api', ic: 'bolt' },
-      { k: 'bot', t: 'Bot', p: '/bot', ic: 'bot' },
+      { k: 'bot', t: 'WA Bot', p: '/bot', ic: 'bot' },
       { k: 'papers', t: 'Papers', p: 'https://pastpaper-pro.vercel.app', ic: 'book' }
     ];
     dock.innerHTML = dockItems.map(function (it) {
