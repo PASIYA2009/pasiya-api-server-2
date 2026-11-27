@@ -354,7 +354,7 @@
     settingsPop.id = 'psSettingsPop';
     settingsPop.setAttribute('aria-hidden', 'true');
     settingsPop.innerHTML = '<div class="ps-settings-title">' + ico('settings') + '<b>Settings · ' + esc(SITE.n) + '</b><button type="button" class="ps-settings-close" aria-label="Close settings">×</button></div>' +
-      (ROLE === 'api' ? '<section class="ps-api-settings" id="psApiSettings"><div class="ps-api-balance"><small>YOUR COIN BALANCE</small><strong id="psApiCoins">—</strong></div><div class="ps-api-shortcuts"><button type="button" data-go="wallet">Coin wallet</button><button type="button" data-go="history">Coin history</button><button type="button" data-go="profile">API keys & profile</button></div><div class="ps-api-history-head">Recent coin activity</div><div class="ps-api-history" id="psApiHistory">Sign in to view coin history.</div><div class="ps-api-keys-head">API keys</div><div class="ps-api-keys" id="psApiKeys">Sign in to view your API keys.</div></section><div class="ps-settings-divider"></div>' : '') +
+      ('<section class="ps-api-settings" id="psApiSettings"><div class="ps-api-balance"><small>YOUR COIN BALANCE</small><strong id="psApiCoins">—</strong></div><div class="ps-api-shortcuts">' + [['wallet', 'Coin wallet'], ['history', 'Coin history'], ['profile', 'API keys & profile']].map(function (x) { return ROLE === 'api' ? '<button type="button" data-go="' + x[0] + '">' + x[1] + '</button>' : '<a href="' + accountHash(x[0]) + '">' + x[1] + '</a>'; }).join('') + '</div><div class="ps-api-history-head">Recent coin activity</div><div class="ps-api-history" id="psApiHistory">Sign in to view coin history.</div><div class="ps-api-keys-head">API keys</div><div class="ps-api-keys" id="psApiKeys">Sign in to view your API keys.</div></section><div class="ps-settings-divider"></div>') +
       '<div class="ps-settings-page" data-ps-settings-page></div><div class="ps-settings-divider"></div><div class="ps-settings-music"><div><small>BACKGROUND MUSIC</small><b id="psSettingsTrack">PASIYA Music Player</b></div><div class="ps-settings-music-controls"><button type="button" data-ps-music="prev" aria-label="Previous song">‹</button><button type="button" data-ps-music="play" aria-label="Play or pause">▶</button><button type="button" data-ps-music="next" aria-label="Next song">›</button></div></div><div class="ps-settings-divider"></div><div class="ps-settings-theme-label">' + ico('palette') + '<span>Theme colour</span></div><div data-ps-dots></div>';
     b.appendChild(settingsPop);
     var aiFab = D.createElement('a');
@@ -370,7 +370,7 @@
       if (restoreAi) restoreAi.hidden = show;
       try { LS.set('pasiya_ai_shortcut_hidden', show ? '0' : '1'); } catch (e) {}
     }
-    var aiHidden = LS.get('pasiya_ai_shortcut_hidden') === '1';
+    var aiHidden = false; try { LS.set('pasiya_ai_shortcut_hidden', '0'); } catch (e) {} // the little x was removed: the shortcut always stays
     setAiShortcutVisible(!aiHidden);
     aiDismiss.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); setAiShortcutVisible(false); });
     var restoreAi = D.createElement('button');
@@ -406,7 +406,6 @@
       settingsTrack.textContent = trackNode.textContent || 'PASIYA Music Player';
     }
     function refreshApiSettings() {
-      if (ROLE !== 'api') return;
       var coinNode = $('#psApiCoins'), historyNode = $('#psApiHistory'), keysNode = $('#psApiKeys');
       if (!P.user) { // signed out: a real, working Sign in button (it comes back to this page after login)
         var ready = !!P.authReady;
@@ -446,7 +445,7 @@
         settingsPop.classList.remove('open'); settingsPop.setAttribute('aria-hidden', 'true');
       }
     });
-    if (ROLE === 'api') refreshApiSettings();
+    refreshApiSettings();
     P.refreshSettings = refreshApiSettings;
     D.addEventListener('click', function (e) {
       if (!settingsPop.contains(e.target) && !$('#psDockSettings').contains(e.target) && !($('#psTopSettings') && $('#psTopSettings').contains(e.target))) {
@@ -798,7 +797,7 @@
     // one pro font on every site: Plus Jakarta Sans (headings + body) with Inter as the fallback
     if (!$('link[href*="Plus+Jakarta+Sans"]')) { var l = D.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap'; D.head.appendChild(l); }
     if (!window.__psReveal && ROLE !== 'ofc') { var rv = D.createElement('script'); rv.src = '/_pasiya/reveal.js'; rv.defer = true; D.head.appendChild(rv); }
-    updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter(); bootTop();
+    updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter();
     fetch('/api/config').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (c) { P.cfg = c || {}; renderAll(); });
     bootAuth();
     fixTops(); setTimeout(fixTops, 900); setTimeout(fixTops, 3000); addEventListener('resize', fixTops);
