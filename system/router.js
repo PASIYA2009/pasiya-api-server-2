@@ -2,6 +2,7 @@
 import { HttpError, json, CORS, SITE, CREATOR, stamp } from './util.js';
 import { serve, endpointHealth } from './gateway.js';
 import { account } from './account.js';
+import { comments } from './comments.js';
 import { status, serverLoad } from './status.js';
 import { ENDPOINTS, listCatalog } from './registry.js';
 import { getFlags } from './flags.js';
@@ -21,6 +22,9 @@ async function route(req, env) {
   const def = ENDPOINTS.get(p);
   if (def && (m === 'GET' || m === 'POST')) return serve(req, env, def);
   if (def) throw new HttpError(405, 'Use GET or POST.');
+
+  const cm = await comments(req, env, p, m);
+  if (cm !== undefined) return json(cm);
 
   const r = await account(req, env, p, m);
   if (r !== undefined) return json(r);

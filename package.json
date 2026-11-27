@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "node test/run.mjs"
+    "test": "node test/run.mjs && node test/comments.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

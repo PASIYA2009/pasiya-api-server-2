@@ -2,8 +2,9 @@
 const FIREBASE = { apiKey: 'AIzaSyCPZAmh7zUmU24aRtDvhGKXydh8DCDSaxk', authDomain: 'pasiya-api.firebaseapp.com', projectId: 'pasiya-api', storageBucket: 'pasiya-api.firebasestorage.app', messagingSenderId: '1074532195422', appId: '1:1074532195422:web:3a1f26e066ad5165e3a8cf' };
 export const $ = (s) => document.querySelector(s);
 const store = { get: (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
-document.documentElement.dataset.theme = store.get('pasiya_theme') || 'dark';
-const tb = $('#themeBtn'); if (tb) tb.onclick = () => { const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; document.documentElement.dataset.theme = t; store.set('pasiya_theme', t); };
+// Login / Register are ALWAYS dark (same look as the whole PASIYA site). An old "light" value saved by the removed theme button used to turn these pages white.
+document.documentElement.dataset.theme = 'dark';
+try { if (localStorage.getItem('pasiya_theme') === 'light') localStorage.removeItem('pasiya_theme'); } catch {}
 for (const b of document.querySelectorAll('[data-eye]')) b.onclick = () => { const i = b.parentElement.querySelector('input'); i.type = i.type === 'password' ? 'text' : 'password'; };
 
 let tt; export const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2400); };

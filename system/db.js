@@ -115,6 +115,15 @@ export async function query(env, col, whereField, whereValue, limit = 50) {
   const a = await call(env, 'POST', ':runQuery', q);
   return (a || []).filter((x) => x.document).map((x) => ({ id: x.document.name.split('/').pop(), ...decode(x.document) }));
 }
+// newest-first style listing (single-field orderBy needs no composite index)
+export async function listOrdered(env, col, orderField, limit = 50, desc = true) {
+  const a = await call(env, 'POST', ':runQuery', { structuredQuery: { from: [{ collectionId: col }], limit,
+    orderBy: [{ field: { fieldPath: orderField }, direction: desc ? 'DESCENDING' : 'ASCENDING' }] } });
+  return (a || []).filter((x) => x.document).map((x) => ({ id: x.document.name.split('/').pop(), ...decode(x.document) }));
+}
+export async function del(env, col, id) {
+  await call(env, 'DELETE', `/${col}/${encodeURIComponent(id)}`);
+}
 export async function count(env, col) {
   const a = await call(env, 'POST', ':runAggregationQuery', {
     structuredAggregationQuery: { structuredQuery: { from: [{ collectionId: col }] }, aggregations: [{ alias: 'n', count: {} }] }

@@ -103,3 +103,9 @@ Tests: `node test/run.mjs` (offline, mocked sites, no install needed).
 - Login/Register return to the page the visitor came from (`?next=` + sessionStorage); Back button added.
 - Settings popup: working "Sign in" button. Scroll panels can no longer stay invisible (reveal safety net). API list: skeleton + chunked rendering; Community activity has retry.
 - New music player card (progress, volume), menu buttons as cards, Plus Jakarta Sans font. `shell.js`/`palette.css`/UI block of `shell.css` are identical in the OFC repo.
+
+## v6.1
+- **Admin Panel button in Settings:** when you are signed in with the admin Gmail (`ADMIN_EMAIL`, verified), the Settings popup (bottom bar on phones, gear on desktop) shows an **Admin Panel** button. On the API site it scrolls to the Admin Panel; on the OFC site it opens `/api#admin`. Normal users and guests never see it (the server decides the role).
+- **Login / Register were turning white:** an old "light" value (`pasiya_theme`) saved in the browser by the removed theme button was applied to these pages. They are now always dark, clear that old value, use `color-scheme: dark` and have a coloured fallback background if the animated one cannot load.
+- **Comments API (for the OFC site):** `GET /api/comments`, `POST /api/comments` (signed-in users, 250 chars, 1 per 15 s), `POST /api/comments/delete` (**admin only**). Stored in Firestore `comments` (server-side access only, `firestore.rules` unchanged). New file `system/comments.js`, `db.js` got `listOrdered` + `del`.
+- Tests: `node test/comments.mjs` (offline, mocked Firebase).

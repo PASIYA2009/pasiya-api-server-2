@@ -612,3 +612,11 @@ html{background:#070a14} /* no white flash while a page opens (login etc.) */
 .modal-back{z-index:100050!important;top:0!important;padding:calc(var(--psb-h,60px) + 14px) 12px calc(20px + env(safe-area-inset-bottom,0px))!important;align-items:flex-start!important}
 .modal-back .modal{max-height:none!important;margin:0 auto}
 .ps-settings-pop{max-height:calc(100vh - 170px)!important;overflow-y:auto!important;overscroll-behavior:contain}
+
+/* ---- v6.1: Admin Panel button inside the Settings popup (admin only) ---- */
+.ps-api-admin{margin-top:6px}
+.ps-api-admin[hidden]{display:none!important}
+.ps-admin-btn{display:flex;align-items:center;gap:9px;width:100%;min-height:46px;padding:0 12px;border-radius:13px;border:1px solid rgba(244,114,182,.4);background:linear-gradient(160deg,rgba(244,114,182,.14),rgba(255,255,255,.02));color:#eaf0ff;font:700 12px var(--ps-font,inherit);text-decoration:none;cursor:pointer;transition:transform .2s,border-color .2s}
+.ps-admin-btn:hover{transform:translateY(-2px);border-color:#f472b6}
+.ps-admin-btn svg{width:18px;height:18px;flex:none;color:#f472b6}
+.ps-admin-btn span{flex:1;text-align:left}

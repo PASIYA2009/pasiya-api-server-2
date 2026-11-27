@@ -248,7 +248,7 @@
   }
   P.refreshCoins = pollCoins;
   var _fetch = window.fetch.bind(window), coinTimers = [];
-  var NOPAY = /\/api\/(me|theme|config|music|health|ping|status|load|catalog|endpoint-status|keys|usage|coins\/history|auth)(\/|\?|$)|\/api\/admin\/healthcheck/;
+  var NOPAY = /\/api\/(me|theme|config|music|health|ping|status|load|catalog|endpoint-status|keys|usage|comments|coins\/history|auth)(\/|\?|$)|\/api\/admin\/healthcheck/;
   window.fetch = function (input, init) {
     var pr = _fetch(input, init);
     try {
@@ -354,7 +354,7 @@
     settingsPop.id = 'psSettingsPop';
     settingsPop.setAttribute('aria-hidden', 'true');
     settingsPop.innerHTML = '<div class="ps-settings-title">' + ico('settings') + '<b>Settings · ' + esc(SITE.n) + '</b><button type="button" class="ps-settings-close" aria-label="Close settings">×</button></div>' +
-      ('<section class="ps-api-settings" id="psApiSettings"><div class="ps-api-balance"><small>YOUR COIN BALANCE</small><strong id="psApiCoins">—</strong></div><div class="ps-api-shortcuts">' + [['wallet', 'Coin wallet'], ['history', 'Coin history'], ['profile', 'API keys & profile']].map(function (x) { return ROLE === 'api' ? '<button type="button" data-go="' + x[0] + '">' + x[1] + '</button>' : '<a href="' + accountHash(x[0]) + '">' + x[1] + '</a>'; }).join('') + '</div><div class="ps-api-history-head">Recent coin activity</div><div class="ps-api-history" id="psApiHistory">Sign in to view coin history.</div><div class="ps-api-keys-head">API keys</div><div class="ps-api-keys" id="psApiKeys">Sign in to view your API keys.</div></section><div class="ps-settings-divider"></div>') +
+      ('<section class="ps-api-settings" id="psApiSettings"><div class="ps-api-balance"><small>YOUR COIN BALANCE</small><strong id="psApiCoins">—</strong></div><div class="ps-api-shortcuts">' + [['wallet', 'Coin wallet'], ['history', 'Coin history'], ['profile', 'API keys & profile']].map(function (x) { return ROLE === 'api' ? '<button type="button" data-go="' + x[0] + '">' + x[1] + '</button>' : '<a href="' + accountHash(x[0]) + '">' + x[1] + '</a>'; }).join('') + '</div><div class="ps-api-admin" id="psApiAdmin" hidden></div><div class="ps-api-history-head">Recent coin activity</div><div class="ps-api-history" id="psApiHistory">Sign in to view coin history.</div><div class="ps-api-keys-head">API keys</div><div class="ps-api-keys" id="psApiKeys">Sign in to view your API keys.</div></section><div class="ps-settings-divider"></div>') +
       '<div class="ps-settings-page" data-ps-settings-page></div><div class="ps-settings-divider"></div><div class="ps-settings-music"><div><small>BACKGROUND MUSIC</small><b id="psSettingsTrack">PASIYA Music Player</b></div><div class="ps-settings-music-controls"><button type="button" data-ps-music="prev" aria-label="Previous song">‹</button><button type="button" data-ps-music="play" aria-label="Play or pause">▶</button><button type="button" data-ps-music="next" aria-label="Next song">›</button></div></div><div class="ps-settings-divider"></div><div class="ps-settings-theme-label">' + ico('palette') + '<span>Theme colour</span></div><div data-ps-dots></div>';
     b.appendChild(settingsPop);
     var aiFab = D.createElement('a');
@@ -406,7 +406,15 @@
       settingsTrack.textContent = trackNode.textContent || 'PASIYA Music Player';
     }
     function refreshApiSettings() {
-      var coinNode = $('#psApiCoins'), historyNode = $('#psApiHistory'), keysNode = $('#psApiKeys');
+      var coinNode = $('#psApiCoins'), historyNode = $('#psApiHistory'), keysNode = $('#psApiKeys'), admNode = $('#psApiAdmin');
+      // "Admin Panel" button: ONLY for the admin account (server decides: ADMIN_EMAIL + verified e-mail)
+      if (admNode) {
+        if (P.user && isAdmin()) {
+          admNode.hidden = false;
+          admNode.innerHTML = (ROLE === 'api' ? '<button type="button" class="ps-admin-btn" data-go="admin">' : '<a class="ps-admin-btn" href="' + accountHash('admin') + '">') +
+            ico('shield') + '<span>Admin Panel</span><em class="ps-tag adm">ADMIN</em>' + (ROLE === 'api' ? '</button>' : '</a>');
+        } else { admNode.hidden = true; admNode.innerHTML = ''; }
+      }
       if (!P.user) { // signed out: a real, working Sign in button (it comes back to this page after login)
         var ready = !!P.authReady;
         if (coinNode) coinNode.innerHTML = ready ? '<a class="ps-signin" data-ps-login="login" href="' + loginUrl('login') + '">Sign in</a>' : '…';
