@@ -197,7 +197,7 @@
     }
     if (e.target.closest && e.target.closest('[data-ps-signout]') && P.auth && P.A) {
       var signoutButtons = $$('[data-ps-signout]'); signoutButtons.forEach(function (b) { b.disabled = true; });
-      P.A.signOut(P.auth).then(function () { P.user = null; P.me = null; renderAll(); location.reload(); })
+      P.A.signOut(P.auth).then(function () { try { localStorage.removeItem('pasiya_key'); } catch (e) {} P.user = null; P.me = null; renderAll(); location.reload(); })
         .catch(function () { signoutButtons.forEach(function (b) { b.disabled = false; }); });
     }
     var a = e.target.closest && e.target.closest('a[data-ps-x]');
@@ -338,6 +338,7 @@
       { k: 'ofc', t: 'Home', p: '/', ic: 'home' },
       { k: 'api', t: 'API', p: '/api', ic: 'bolt' },
       { k: 'bot', t: 'WA Bot', p: '/bot', ic: 'bot' },
+      { k: 'qr', t: 'QR', p: '/qr', ic: 'qr' },
       { k: 'papers', t: 'Papers', p: 'https://pastpaper-pro.vercel.app', ic: 'book' }
     ];
     dock.innerHTML = dockItems.map(function (it) {

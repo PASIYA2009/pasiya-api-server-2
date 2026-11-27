@@ -416,6 +416,7 @@ const FIREBASE = { apiKey: 'AIzaSyCPZAmh7zUmU24aRtDvhGKXydh8DCDSaxk', authDomain
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function clearKeyTraces() { try { localStorage.removeItem('pasiya_key'); } catch {} const q = (s) => document.querySelector(s); if (q('#keyList')) q('#keyList').innerHTML = ''; if (q('#keyValue')) q('#keyValue').textContent = ''; if (q('#keyReveal')) q('#keyReveal').hidden = true; if (q('#tKey')) q('#tKey').value = ''; if (q('#usageList')) q('#usageList').innerHTML = ''; if (q('#coinList')) q('#coinList').innerHTML = '<div class="muted">Sign in to view your activity.</div>'; }
 const store = { get: (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
 const S = { user: null, fb: null, catalog: [], cat: 'All', q: '', me: null, def: null, tab: 'res', pings: [], spinDeg: 0 };
 
@@ -582,13 +583,13 @@ function openTerm(def) {
   S.def = def; S.tab = 'res'; S.lastRes = ''; S.lastErr = false;
   $('#termTitle').textContent = 'Terminal — ' + def.name; $('#tName').textContent = def.name; $('#tPath').textContent = 'GET / POST  ·  ' + def.path;
   $('#tParams').innerHTML = def.params.length ? def.params.map((p) => `<div class="field"><label for="p_${esc(p.name)}">${esc(p.name)}${p.required ? ' <b>*</b>' : ''}</label><input id="p_${esc(p.name)}" data-n="${esc(p.name)}" class="mono" value="${esc(p.example)}" placeholder="${esc(p.desc)}" autocomplete="off"></div>`).join('') : '<p class="muted">This API takes no parameters.</p>';
-  $('#tKey').value = store.get('pasiya_key');
+  $('#tKey').value = S.user ? store.get('pasiya_key') : '';
   $('#tKeyHelp').textContent = S.user ? 'Signed in: leave this empty and the test uses your login.' : 'Paste your API key or sign in to test.';
   $$('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === 'res'));
   setOut('$ ready'); termRefresh(); openModal('#termModal');
   $$('#tParams input').forEach((i) => (i.oninput = termRefresh));
 }
-$('#tKey').oninput = () => { store.set('pasiya_key', $('#tKey').value.trim()); termRefresh(); };
+$('#tKey').oninput = () => { if (S.user) store.set('pasiya_key', $('#tKey').value.trim()); termRefresh(); };
 $$('.tabs button').forEach((b) => (b.onclick = () => { S.tab = b.dataset.tab; $$('.tabs button').forEach((x) => x.classList.toggle('on', x === b)); if (S.tab === 'res') setOut(S.lastRes || '$ ready', S.lastErr); else termRefresh(); }));
 $('#tCopyCurl').onclick = () => copy(curlText(), 'cURL copied');
 $('#tCopyUrl').onclick = () => copy(buildUrl(true), 'URL copied');
@@ -613,7 +614,7 @@ async function initAuth() {
   try {
     const [{ initializeApp }, A] = await Promise.all([import('https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js'), import('https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js')]);
     S.fb = A; S.auth = A.getAuth(initializeApp(FIREBASE));
-    A.onAuthStateChanged(S.auth, async (u) => { S.user = u; if (!u) S.me = null; renderUser(); if (u) { closeModals(); await ensureKey(); await refreshAll(); } });
+    A.onAuthStateChanged(S.auth, async (u) => { S.user = u; if (!u) { S.me = null; clearKeyTraces(); } renderUser(); if (u) { closeModals(); await ensureKey(); await refreshAll(); } });
   } catch { $('#authMsg').textContent = 'Sign-in could not load. Check your connection and reload.'; renderUser(); }
 }
 const authMsg = (t, cls = 'bad') => { const m = $('#authMsg'); m.textContent = t; m.className = 'msg ' + cls; };
