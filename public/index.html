@@ -8,7 +8,7 @@
 <title>PASIYA API — Developer Platform</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 4l24 14v28L32 60 8 46V18z' fill='%2322d3ee'/%3E%3Ctext x='32' y='42' font-size='30' font-weight='900' text-anchor='middle' fill='%23070b14' font-family='Arial'%3EP%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 :root{--bg:#070b14;--surface:#0d1426;--surface2:#101a30;--inset:#080d1a;--line:#1b2742;--text:#e6edf7;--head:#f3f7fd;--muted:#8393ad;--good:#34d399;--warn:#fbbf24;--bad:#fb7185;--shadow:0 10px 40px #0006;--sans:'Outfit',ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 :root[data-theme=light]{--bg:#f1f5fa;--surface:#fff;--surface2:#f4f7fb;--inset:#f1f5fa;--line:#d9e2ee;--text:#0f1b2d;--head:#0a1424;--muted:#5a6b85;--good:#059669;--warn:#b45309;--bad:#e11d48;--shadow:0 10px 30px #1b2a4a1a}
@@ -304,7 +304,7 @@ body{background:transparent!important}body::before{display:none}
     <div class="panel-head"><h2>API Explorer</h2><span class="muted"><span id="count">0</span> endpoints</span></div>
     <div class="searchbar"><input id="search" type="search" placeholder="Search endpoints, e.g. weather, news, gemini" autocomplete="off" aria-label="Search APIs"></div>
     <div class="filters" id="filters" role="tablist" aria-label="API categories"></div>
-    <div class="api-grid" id="list"></div>
+    <div class="api-grid" id="list"><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article><article class="api-card sk"></article></div>
   </section>
 
   <div class="columns" style="margin-top:16px">
@@ -503,8 +503,9 @@ let publicInsightsLoaded = false, publicInsightsAt = 0;
 async function loadPublicInsights(force = false) {
   if (publicInsightsLoaded && !force && Date.now() - publicInsightsAt < 60000) return;
   publicInsightsLoaded = true;
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
   try {
-    const r = await fetch('/api/insights', { cache: 'no-store' }), d = await r.json();
+    const r = await fetch('/api/insights', { cache: 'no-store', signal: ctl.signal }), d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Insights unavailable');
     $('#publicInsightsTotal').textContent = fmtNum(d.total7d) + ' requests / 7 days';
     const max = Math.max(1, ...(d.hourly || []).map((x) => Number(x.requests || 0)));
@@ -514,8 +515,14 @@ async function loadPublicInsights(force = false) {
     $('#publicInsightsMeta').innerHTML = `<span class="analytics-chip">Busiest time <b>${esc(d.peakHour || 'Collecting data')}</b></span><span class="analytics-chip">Peak hour <b>${fmtNum(d.peakRequests)} calls</b></span>`;
     $('#publicInsightsNote').textContent = 'Community-wide real request counts. API rankings start accumulating after this version is deployed.';
     publicInsightsAt = Date.now();
-  } catch (e) { publicInsightsLoaded = false; $('#publicInsightsNote').textContent = e.message; }
+  } catch (e) {
+    publicInsightsLoaded = false;
+    $('#publicInsightsNote').innerHTML = `${esc(e.name === 'AbortError' ? 'Activity is taking too long to load.' : (e.message || 'Could not load activity.'))} <a href="#" id="insightsRetry">Try again</a>`;
+    $('#insightsRetry').onclick = (ev) => { ev.preventDefault(); $('#publicInsightsNote').textContent = 'Loading…'; loadPublicInsights(true); };
+    setTimeout(() => loadPublicInsights(), 20000); // and quietly try again on its own
+  } finally { clearTimeout(to); }
 }
+if ('IntersectionObserver' in window) new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) loadPublicInsights(); }, { rootMargin: '600px 0px' }).observe($('#publicInsights'));
 
 async function loadStatus() {
   if (document.hidden) return;
@@ -534,18 +541,28 @@ function renderFilters() {
   $$('.filter').forEach((b) => (b.onclick = () => { S.cat = b.dataset.c; renderFilters(); renderList(); }));
 }
 const OPEN = '<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>';
+const apiCard = (a) => `<article class="api-card"><div class="api-top"><span class="api-ic">${catIcon(a.category)}</span><span class="badges">${a.cost ? `<span class="bd coin">${a.cost} COIN${a.cost > 1 ? 'S' : ''}</span>` : '<span class="bd key">FREE</span>'}${a.isNew ? '<span class="bd new">NEW</span>' : ''}</span></div><h3>${esc(a.name)}</h3><p>${esc(a.desc)}</p><div class="pathrow"><span class="method">GET</span><span class="code">${esc(a.path)}</span><button data-p="${esc(a.path)}" aria-label="Test ${esc(a.name)}">${OPEN}</button></div></article>`;
+let listTok = 0;
+const later = (f) => (window.requestIdleCallback ? requestIdleCallback(f, { timeout: 200 }) : setTimeout(f, 30));
 function renderList() {
-  const q = S.q.toLowerCase();
+  const q = S.q.toLowerCase(), box = $('#list'), tok = ++listTok;
   const items = S.catalog.filter((a) => (S.cat === 'All' || a.category === S.cat) && (!q || `${a.name} ${a.path} ${a.desc} ${a.category}`.toLowerCase().includes(q)));
   $('#count').textContent = items.length;
-  $('#list').innerHTML = items.length ? items.map((a) => `<article class="api-card"><div class="api-top"><span class="api-ic">${catIcon(a.category)}</span><span class="badges">${a.cost ? `<span class="bd coin">${a.cost} COIN${a.cost > 1 ? 'S' : ''}</span>` : '<span class="bd key">FREE</span>'}${a.isNew ? '<span class="bd new">NEW</span>' : ''}</span></div><h3>${esc(a.name)}</h3><p>${esc(a.desc)}</p><div class="pathrow"><span class="method">GET</span><span class="code">${esc(a.path)}</span><button data-p="${esc(a.path)}" aria-label="Test ${esc(a.name)}">${OPEN}</button></div></article>`).join('') : '<div class="empty">No API matches your search.</div>';
-  $$('#list [data-p]').forEach((b) => (b.onclick = () => openTerm(S.catalog.find((a) => a.path === b.dataset.p))));
+  if (!items.length) { box.innerHTML = '<div class="empty">No API matches your search.</div>'; return; }
+  const FIRST = 18, STEP = 24; // a big list is painted in pieces so the page never freezes while it loads
+  box.innerHTML = items.slice(0, FIRST).map(apiCard).join('');
+  let i = FIRST;
+  const more = () => { if (tok !== listTok || i >= items.length) return; box.insertAdjacentHTML('beforeend', items.slice(i, i + STEP).map(apiCard).join('')); i += STEP; if (i < items.length) later(more); };
+  if (items.length > FIRST) later(more);
 }
+$('#list').addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-p]'); if (b) openTerm(S.catalog.find((a) => a.path === b.dataset.p)); });
 $('#search').oninput = (e) => { S.q = e.target.value.trim(); renderList(); };
+const showListSkeleton = () => { $('#list').innerHTML = '<article class="api-card sk"></article>'.repeat(9); };
 async function loadCatalog() {
   let apis;
-  try { apis = (await (await fetch('/api/catalog', { cache: 'no-store' })).json()).apis || []; }
-  catch { if (!S.catalog.length) $('#list').innerHTML = '<div class="empty">Could not load the API list. Check your connection and reload.</div>'; return; } // a failed refresh keeps the list that is already shown
+  const get = async () => { const c = new AbortController(), t = setTimeout(() => c.abort(), 15000); try { const r = await fetch('/api/catalog', { cache: 'no-store', signal: c.signal }); if (!r.ok) throw new Error('catalog ' + r.status); return (await r.json()).apis || []; } finally { clearTimeout(t); } };
+  try { apis = await get().catch(() => new Promise((r) => setTimeout(r, 800)).then(get)); }
+  catch { if (!S.catalog.length) { $('#list').innerHTML = '<div class="empty">Could not load the API list. <button type="button" class="btn sm" id="listRetry">Try again</button></div>'; $('#listRetry').onclick = () => { showListSkeleton(); loadCatalog(); }; } return; } // a failed refresh keeps the list that is already shown
   if (S.catalogKey === JSON.stringify(apis.map((a) => a.path))) return; // nothing changed: do not touch the page
   S.catalogKey = JSON.stringify(apis.map((a) => a.path)); S.catalog = apis;
   if (S.cat !== 'All' && !apis.some((a) => a.category === S.cat)) S.cat = 'All';
@@ -817,7 +834,7 @@ function loadMusic() { try { return window.PS?.music?.reload(); } catch {} }
 (() => { const h = location.hash.slice(1); if (!h) return; let n = 0; const t = setInterval(() => { const el = document.getElementById(h); if ((el && !el.hidden && el.offsetHeight) || ++n > 20) { clearInterval(t); if (el && !el.hidden) go(h); } }, 400); })();
 renderStatus(null); renderUser(); loadCatalog(); loadStatus(); initAuth();
 setInterval(loadStatus, 30000);
-setInterval(loadLive, 2000);
+setInterval(loadLive, 5000);
 setInterval(() => { if (!document.hidden) loadCatalog(); }, 30000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadStatus(); loadCatalog(); } });
 </script>

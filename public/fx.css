@@ -19,3 +19,9 @@
   .fx-reveal{opacity:1;transform:none;transition:none}
   .auth-card,.card,main>form{animation:none}
 }
+
+/* ---- v6: API list loads fast ---- */
+.api-card{content-visibility:auto;contain-intrinsic-size:auto 190px}
+.api-card.sk{min-height:172px;border-radius:22px;border:1px solid var(--line);background:linear-gradient(100deg,color-mix(in srgb,var(--surface) 96%,transparent) 30%,color-mix(in srgb,var(--primary,#3b9cf5) 9%,var(--surface)) 50%,color-mix(in srgb,var(--surface) 96%,transparent) 70%);background-size:220% 100%;animation:fxSk 1.3s linear infinite}
+@keyframes fxSk{to{background-position:-220% 0}}
+@media (prefers-reduced-motion:reduce){.api-card.sk{animation:none}}

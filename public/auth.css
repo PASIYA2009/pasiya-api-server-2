@@ -40,3 +40,14 @@ label{display:block;margin:14px 0 7px;font:700 13px var(--mono);letter-spacing:.
 /* top bar / menu / animated background come from /shell.js */
 html{background:#070a14}body{background:transparent!important}body::before{display:none}.bar{display:none!important}
 .card{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+
+/* ---- v6: back button, spacing under the fixed top bar / above the mobile dock ---- */
+.backlink{display:inline-flex;align-items:center;gap:4px;margin:-10px 0 10px -8px;padding:8px 14px 8px 8px;border-radius:12px;color:var(--muted);font-weight:700;font-size:13px;transition:.2s}
+.backlink:hover{color:var(--primary);background:color-mix(in srgb,var(--primary) 10%,transparent)}
+.backlink svg{width:18px;height:18px}
+.wrap{padding:28px 14px 56px}
+.card{position:relative}
+.card .hero svg.logo{overflow:visible}
+@media(max-width:820px){.wrap{padding-bottom:130px}}
+label{font:700 13px var(--ps-font,inherit);letter-spacing:.01em}
+.in input{font:500 15px var(--ps-font,inherit)}.row a,.or,.hint{font-family:var(--ps-font,inherit)}

@@ -97,3 +97,9 @@ Tests: `node test/run.mjs` (offline, mocked sites, no install needed).
 - `public/shell.js` + `shell.css` + `palette.css` give the same menu, footer and 4-colour theme as the OFC site.
 - Set `OFC_ORIGIN` (Cloudflare > Settings > Variables) to the OFC site address so a user who opened this worker directly is carried to the OFC site already logged in (`POST /api/auth/handoff`).
 - `/login?next=/path` returns to a same-site path after login.
+
+## v6 (UI fixes)
+- Blue theme colour was missing from `palette.css` (it fell back to red) - added. Login/Register logo bug (duplicate SVG gradient id) fixed.
+- Login/Register return to the page the visitor came from (`?next=` + sessionStorage); Back button added.
+- Settings popup: working "Sign in" button. Scroll panels can no longer stay invisible (reveal safety net). API list: skeleton + chunked rendering; Community activity has retry.
+- New music player card (progress, volume), menu buttons as cards, Plus Jakarta Sans font. `shell.js`/`palette.css`/UI block of `shell.css` are identical in the OFC repo.

@@ -57,7 +57,7 @@
   function logo(id) { return '<svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a)"/><stop offset="1" style="stop-color:var(--b)"/></linearGradient></defs><path d="M32 3l25 14.5v29L32 61 7 46.5v-29z" fill="#0b1220" stroke="url(#' + id + ')" stroke-width="3"/><path d="M24 46V19h12a8.5 8.5 0 010 17H24" fill="none" stroke="url(#' + id + ')" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
   // ---------- theme accent (shared by every site) ----------
-  var ACCENTS = [['red', '#f04b5b', 'Red'], ['blue', '#3b9cf5', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber'], ['pink', '#ec4899', 'Pink'], ['cyan', '#22d3ee', 'Cyan'], ['lime', '#84cc16', 'Lime']];
+  var ACCENTS = [['red', '#f04b5b', 'Red'], ['blue', '#2f7df6', 'Blue'], ['purple', '#a371f7', 'Purple'], ['green', '#14c78a', 'Green'], ['amber', '#f5a524', 'Amber'], ['pink', '#ec4899', 'Pink'], ['cyan', '#22d3ee', 'Cyan'], ['lime', '#84cc16', 'Lime']];
   var ACC_IDS = ACCENTS.map(function (x) { return x[0]; });
   // admin default colour (Admin Panel > Default theme): used ONLY while the visitor has not picked a colour themselves
   function applyDefaultAccent(a) {
@@ -143,11 +143,22 @@
   }
 
   // ---------- login urls ----------
+  // The login / register links always carry the page the visitor is on (?next=), so after signing in they land
+  // exactly where they pressed "Log in" (path + query + #section). auth.js reads ?next= (and the sessionStorage copy).
+  function backTarget() {
+    var p = location.pathname + location.search.replace(/([?&])ps_ok=1&?/, '$1').replace(/[?&]$/, '') + location.hash;
+    if (!/^\/(?!\/|\\)/.test(p) || /^\/(api\/)?(login|register)(\/|\?|#|$)/.test(p)) return '/';
+    return p;
+  }
   function loginUrl(kind) {
-    if (ROLE === 'api') return '/' + kind;
-    var next = location.pathname + location.search; if (!/^\/(?!\/)/.test(next)) next = '/';
+    var next = backTarget();
+    try { sessionStorage.setItem('ps_back', next); } catch (e) {}
+    if (ROLE === 'api') return (isDirect() ? '/' : '/api/') + kind + '?next=' + encodeURIComponent(next);
     return '/api/' + kind + '?next=' + encodeURIComponent(next);
   }
+  // the hash / query can change while the page is open (menu anchors): keep every login link fresh
+  function refreshLoginLinks() { $$('a[data-ps-login]').forEach(function (a) { a.href = loginUrl(a.getAttribute('data-ps-login')); }); }
+  addEventListener('hashchange', refreshLoginLinks);
 
   // ---------- account card / chip ----------
   function nameOf() { var u = P.user; return (P.me && P.me.username) || (u && (u.displayName || (u.email || '').split('@')[0])) || 'User'; }
@@ -157,7 +168,7 @@
   function renderAccount() {
     $$('[data-ps-account]').forEach(function (el) {
       if (P.user) el.innerHTML = '<div class="ps-acct"><div class="ps-user">' + avatar() + '<div><b>' + esc(nameOf()) + (isAdmin() ? '<span class="ps-role">ADMIN</span>' : '') + '</b><span class="ps-coin">' + ico('coin') + '<span data-ps-coins>' + coins() + '</span></span></div></div></div>';
-      else el.innerHTML = '<div class="ps-acct"><div class="row"><a class="ps-btn out" href="' + loginUrl('login') + '">Log in</a><a class="ps-btn main" href="' + loginUrl('register') + '">Register</a></div></div>';
+      else el.innerHTML = '<div class="ps-acct"><div class="row"><a class="ps-btn out" data-ps-login="login" href="' + loginUrl('login') + '">Log in</a><a class="ps-btn main" data-ps-login="register" href="' + loginUrl('register') + '">Register</a></div></div>';
     });
     $$('[data-ps-out]').forEach(function (el) { el.hidden = !P.user; if (!el.dataset.b) { el.dataset.b = 1; el.innerHTML = '<div class="ps-sec"></div><button type="button" class="ps-btn danger full" data-ps-signout>' + ico('out') + 'Sign Out</button>'; } });
     $$('[data-ps-top]').forEach(function (el) {
@@ -167,7 +178,7 @@
           '<div class="ps-account-menu" id="psAccountMenu" aria-hidden="true"><div class="ps-account-menu-user">' + avatar() + '<span><b>' + esc(nameOf()) + '</b><small>' + esc((P.user.email || 'Signed in')) + '</small></span></div>' +
           '<a href="' + accountHash('profile') + '">' + ico('user') + '<span>My Account</span></a>' +
           '<button type="button" data-ps-signout>' + ico('out') + '<span>Sign Out</span></button></div></div>'
-        : '<a class="ps-chip login" href="' + loginUrl('login') + '">Log in</a>';
+        : '<a class="ps-chip login" data-ps-login="login" href="' + loginUrl('login') + '">Log in</a>';
     });
   }
   D.addEventListener('click', function (e) {
@@ -260,10 +271,10 @@
       var first = true;
       A.onAuthStateChanged(P.auth, function (u) {
         if (first && !u && ssoToken) { first = false; A.signInWithCustomToken(P.auth, ssoToken).catch(function () { renderAll(); }); ssoToken = null; return; }
-        first = false; P.user = u; P.me = null; renderAll(); if (u) loadMe();
+        first = false; P.authReady = true; P.user = u; P.me = null; renderAll(); if (u) loadMe();
         D.dispatchEvent(new CustomEvent('ps:user', { detail: u }));
       });
-    }).catch(function () { renderAll(); });
+    }).catch(function () { P.authReady = true; renderAll(); });
   }
 
   // ====================================================================================
@@ -310,8 +321,14 @@
         '<div class="psh-txt"><span class="psh-pill"><i></i>DEVELOPER</span><b>PASIDU<br>ESHAN</b><em class="psh-term">&gt; <span>pasiya --online</span><u></u></em></div></div>' +
       '<div data-ps-account></div><div data-ps-admin></div><div data-ps-pagehost></div><div data-ps-acctlinks></div><div data-ps-sites></div>' +
       '<div class="ps-sec">MUSIC</div>' +
-      '<div class="psp" id="psPlayer"><div class="psp-art" id="psArt" aria-hidden="true">' + ico('note') + '</div><div class="psp-info"><b id="psTitle">Music</b><small id="psSub">Loading\u2026</small></div>' +
-      '<div class="psp-ctl"><button type="button" id="psPrev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.500 12z"/></svg></button><button type="button" id="psPlay" class="main" aria-label="Play music"></button><button type="button" id="psNext" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l10.500-7z"/></svg></button></div></div>' +
+      '<div class="psp" id="psPlayer">' +
+        '<div class="psp-top"><div class="psp-art" id="psArt" aria-hidden="true"><span class="psp-disc"><i></i></span></div>' +
+        '<div class="psp-info"><small class="psp-kick">NOW PLAYING</small><b id="psTitle">Music</b><small id="psSub">Loading\u2026</small></div>' +
+        '<span class="psp-eq" id="psEq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>' +
+        '<div class="psp-prog"><span id="psCur">0:00</span><input type="range" id="psSeek" min="0" max="1000" value="0" step="1" aria-label="Seek" disabled><span id="psDur">0:00</span></div>' +
+        '<div class="psp-ctl"><button type="button" id="psPrev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.500 12z"/></svg></button><button type="button" id="psPlay" class="main" aria-label="Play music"></button><button type="button" id="psNext" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l10.500-7z"/></svg></button></div>' +
+        '<div class="psp-vol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9zM16.500 8.500a5 5 0 010 7"/></svg><input type="range" id="psVol" min="0" max="100" value="80" step="1" aria-label="Volume"></div>' +
+      '</div>' +
       '<div data-ps-dots></div><div data-ps-out hidden></div>';
     b.insertBefore(drawer, b.firstChild); b.insertBefore(back, b.firstChild); b.insertBefore(bar, b.firstChild);
 
@@ -391,12 +408,15 @@
     function refreshApiSettings() {
       if (ROLE !== 'api') return;
       var coinNode = $('#psApiCoins'), historyNode = $('#psApiHistory'), keysNode = $('#psApiKeys');
-      if (coinNode) coinNode.textContent = P.me ? (isAdmin() ? '∞' : (typeof P.me.coins === 'number' ? P.me.coins.toLocaleString('en-US') : '—')) : 'Sign in';
-      if (!P.user || !P.auth || !P.auth.currentUser) {
-        if (historyNode) historyNode.textContent = 'Sign in to view coin history.';
-        if (keysNode) keysNode.textContent = 'Sign in to view your API keys.';
+      if (!P.user) { // signed out: a real, working Sign in button (it comes back to this page after login)
+        var ready = !!P.authReady;
+        if (coinNode) coinNode.innerHTML = ready ? '<a class="ps-signin" data-ps-login="login" href="' + loginUrl('login') + '">Sign in</a>' : '…';
+        if (historyNode) historyNode.innerHTML = '<small>' + (ready ? 'Sign in to see your coin activity.' : 'Loading…') + '</small>';
+        if (keysNode) keysNode.innerHTML = '<small>' + (ready ? 'Sign in to see your API keys.' : 'Loading…') + '</small>';
         return;
       }
+      if (coinNode) coinNode.textContent = P.me ? (isAdmin() ? '∞' : (typeof P.me.coins === 'number' ? P.me.coins.toLocaleString('en-US') : '—')) : '…';
+      if (!P.auth || !P.auth.currentUser) return;
       P.auth.currentUser.getIdToken().then(function (token) {
         return Promise.all([
           fetch('/api/coins/history', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }),
@@ -493,9 +513,37 @@
     set('psSub', function (e) { e.textContent = !M.ready ? 'Loading\u2026' : !TRACKS.length ? 'No songs added' : M.fails >= TRACKS.length ? 'Songs unavailable' : M.playing ? 'Playing \u00b7 ' + (M.i + 1) + ' / ' + TRACKS.length : M.want && M.blocked ? 'Tap anywhere to start' : 'Paused \u00b7 ' + (M.i + 1) + ' / ' + TRACKS.length; });
     set('psPlay', function (e) { e.innerHTML = M.playing ? PAUSE_I : PLAY_I; e.setAttribute('aria-label', M.playing ? 'Pause music' : 'Play music'); });
     set('psArt', function (e) { e.classList.toggle('on', M.playing); });
+    set('psEq', function (e) { e.classList.toggle('on', M.playing); });
+    $$('[data-ps-music="play"]').forEach(function (e) { e.innerHTML = M.playing ? PAUSE_I : PLAY_I; e.classList.toggle('on', M.playing); });
+    paintProg();
     keepAlive(M.want && !M.yielded && TRACKS.length > 0); setSession();
     set('psMusicBtn', function (e) { e.classList.toggle('on', M.playing); e.setAttribute('aria-label', M.playing ? 'Pause music' : 'Play music'); });
   }
+  // ---------- progress bar + volume (menu player) ----------
+  var seeking = false;
+  function mmss(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+  function paintProg() {
+    var bar = D.getElementById('psSeek'); if (!bar) return;
+    var dur = 0, cur = 0;
+    try { dur = (M.ready && M.yt && M.yt.getDuration && M.yt.getDuration()) || 0; cur = (M.ready && M.yt && M.yt.getCurrentTime && M.yt.getCurrentTime()) || 0; } catch (e) {}
+    bar.disabled = !(dur > 0);
+    if (!seeking) { bar.value = dur > 0 ? Math.round(Math.min(1, cur / dur) * 1000) : 0; bar.style.setProperty('--p', (dur > 0 ? Math.min(100, cur / dur * 100) : 0) + '%'); }
+    var c = D.getElementById('psCur'), d = D.getElementById('psDur'); if (c) c.textContent = mmss(seeking ? bar.value / 1000 * dur : cur); if (d) d.textContent = dur > 0 ? mmss(dur) : '0:00';
+  }
+  function bindProg() {
+    var bar = D.getElementById('psSeek'), vol = D.getElementById('psVol');
+    if (bar) {
+      bar.addEventListener('input', function () { seeking = true; bar.style.setProperty('--p', (bar.value / 10) + '%'); paintProg(); });
+      bar.addEventListener('change', function () { try { var dur = M.yt.getDuration(); if (dur > 0) M.yt.seekTo(bar.value / 1000 * dur, true); } catch (e) {} seeking = false; paintProg(); });
+    }
+    if (vol) {
+      var v = parseInt(LS.get('pasiya_vol') || '80', 10); if (isNaN(v)) v = 80; vol.value = v; vol.style.setProperty('--p', v + '%');
+      vol.addEventListener('input', function () { LS.set('pasiya_vol', vol.value); vol.style.setProperty('--p', vol.value + '%'); applyVol(); });
+    }
+    setInterval(function () { if (!D.hidden && D.getElementById('psd') && D.getElementById('psd').classList.contains('open')) paintProg(); }, 500);
+  }
+  function applyVol() { try { var v = parseInt(LS.get('pasiya_vol') || '80', 10); if (M.yt && M.yt.setVolume) M.yt.setVolume(isNaN(v) ? 80 : v); } catch (e) {} }
+
   // ---------- background playback: keep the song going when the person leaves the tab / app / locks the phone ----------
   var KEEP = null, KEEP_URL = '';
   function keepWav() { // 10 s mono 16-bit, 8 kHz: a 30 Hz tone at about -60 dB (inaudible, but not "silent" so the browser keeps the media session alive)
@@ -586,6 +634,7 @@
       playVideo: function () { var p = a.play(); if (p && p.catch) p.catch(function () { M.blocked = true; plRender(); }); },
       pauseVideo: function () { a.pause(); }, stopVideo: function () { a.pause(); a.removeAttribute('src'); },
       getCurrentTime: function () { return a.currentTime || 0; }, getVideoData: function () { return { title: '' }; },
+      getDuration: function () { return isFinite(a.duration) ? a.duration : 0; }, seekTo: function (s) { try { a.currentTime = s; } catch (e) {} }, setVolume: function (v) { a.volume = Math.max(0, Math.min(1, v / 100)); },
       loadVideoById: function (u) { a.src = u; ad.playVideo(); }, cueVideoById: function (u) { a.src = u; }
     };
     M.yt = ad;
@@ -599,7 +648,7 @@
   function initPlayer() {
     if (M.yt) return;
     var ev = {
-      onReady: function () { M.ready = true; if (M.want && TRACKS.length) { try { M.yt.playVideo(); } catch (e) {} setTimeout(function () { if (!M.playing && M.want) { M.blocked = true; plRender(); } }, 2000); } plRender(); },
+      onReady: function () { M.ready = true; applyVol(); if (M.want && TRACKS.length) { try { M.yt.playVideo(); } catch (e) {} setTimeout(function () { if (!M.playing && M.want) { M.blocked = true; plRender(); } }, 2000); } plRender(); },
       onAutoplayBlocked: function () { M.blocked = true; plRender(); },
       onStateChange: function (e) {
         if (e.data === 1) { M.playing = true; M.yielded = false; M.blocked = false; M.fails = 0; LS.set('pasiya_owner', M.tab); try { var t = M.yt.getVideoData().title; if (t && TRACKS[M.i]) M.titles[TRACKS[M.i].id] = t; } catch (x) {} }
@@ -622,7 +671,7 @@
     // browsers only allow sound after a real gesture: pointerdown / touchstart do NOT count, the "up" / click events do, so listen to all of them (the first tap, scroll-tap or key starts the music at once)
     ['pointerdown', 'pointerup', 'mouseup', 'touchstart', 'touchend', 'click', 'keydown'].forEach(function (ev) { addEventListener(ev, kick, { passive: true, capture: true }); });
     addEventListener('load', function () { setTimeout(kick, 300); setTimeout(kick, 2500); }); // try once more when the page + loader finished (works where the browser allows autoplay)
-    bindSession();
+    bindSession(); bindProg();
     // leaving the page / app and coming back: carry on (the browser often pauses embedded players in the background)
     D.addEventListener('visibilitychange', function () { setTimeout(resumeIfWanted, D.hidden ? 300 : 0); setSession(); });
     // while the app/browser is in the background the embedded player is often paused by the phone: keep nudging it (only if the person never pressed pause)
@@ -744,8 +793,10 @@
 
   function renderAll() { renderDots(); renderSites(); renderAccount(); renderAdmin(); renderAccountLinks(); if (P.refreshSettings) P.refreshSettings(); }
   function start() {
+    H.dataset.psRole = ROLE;
     H.dataset.accent = LS.get('pasiya_accent') || LS.get('pasiya_def_accent') || H.dataset.accent || 'red'; loadDefaultAccent();
-    if (!$('link[href*="family=Inter"]')) { var l = D.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'; D.head.appendChild(l); }
+    // one pro font on every site: Plus Jakarta Sans (headings + body) with Inter as the fallback
+    if (!$('link[href*="Plus+Jakarta+Sans"]')) { var l = D.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap'; D.head.appendChild(l); }
     if (!window.__psReveal && ROLE !== 'ofc') { var rv = D.createElement('script'); rv.src = '/_pasiya/reveal.js'; rv.defer = true; D.head.appendChild(rv); }
     updateFavicon(); bootBg(); buildChrome(); renderAll(); tick(); setInterval(tick, 1000); bootMusic(); renderFooter(); bootTop();
     fetch('/api/config').then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (c) { P.cfg = c || {}; renderAll(); });

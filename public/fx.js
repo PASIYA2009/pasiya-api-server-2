@@ -20,6 +20,10 @@
       if (n.closest('[hidden]') || n.getBoundingClientRect().top < innerHeight) return;
       n.style.setProperty('--fx-d', (i++ % 3) * 70 + 'ms'); n.classList.add('fx-reveal'); io.observe(n);
     });
+    // safety net: a panel that is on / above the screen is never left invisible (fast scrolling, #anchor jumps, restored scroll position)
+    const sweep = () => doc.querySelectorAll('.fx-reveal:not(.fx-in)').forEach((n) => { if (n.getBoundingClientRect().top < innerHeight * 1.05) { io.unobserve(n); n.classList.add('fx-in'); } });
+    let t; addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(sweep, 150); }, { passive: true });
+    setTimeout(sweep, 1500); setInterval(sweep, 4000);
   }
 
   const start = () => { reveal(); };
