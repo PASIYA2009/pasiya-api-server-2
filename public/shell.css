@@ -299,7 +299,7 @@ html{
     position:fixed;z-index:99980;left:12px;right:12px;
     bottom:calc(9px + env(safe-area-inset-bottom));
     min-height:66px;padding:7px 9px;
-    display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;gap:3px;
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:3px;
     border:1px solid rgba(var(--a-rgb),.55);border-radius:25px;
     background:linear-gradient(145deg,rgba(19,23,38,.91),rgba(8,11,20,.94));
     box-shadow:0 10px 35px rgba(0,0,0,.4),0 0 24px rgba(var(--a-rgb),.10);
@@ -333,7 +333,7 @@ html{
   .psb-time{display:none!important}
 }
 @media(max-width:360px){
-  .ps-mobile-dock{left:7px;right:7px;grid-template-columns:repeat(6,minmax(0,1fr));padding-left:5px;padding-right:5px}
+  .ps-mobile-dock{left:7px;right:7px;grid-template-columns:repeat(5,minmax(0,1fr));padding-left:5px;padding-right:5px}
   .ps-md-item,.ps-md-more{font-size:9.5px!important}
 }
 @media(prefers-reduced-motion:reduce){
@@ -349,7 +349,7 @@ html{
 .psb::after{background:var(--a)!important;opacity:.65}
 .psb-menu{display:none!important}
 @media(min-width:651px){.psb-tabs{display:flex!important}.psb{gap:18px}.psb-tabs{margin:0 auto}.psb-right{margin-left:0}}
-@media(max-width:650px){.psb-tabs{display:none!important}.ps-mobile-dock{grid-template-columns:repeat(6,minmax(0,1fr))!important}.ps-md-settings{color:var(--s-text)!important}.ps-md-settings .ps-ico{color:var(--a)!important}.ps-top{bottom:calc(92px + env(safe-area-inset-bottom))!important}}
+@media(max-width:650px){.psb-tabs{display:none!important}.ps-mobile-dock{grid-template-columns:repeat(5,minmax(0,1fr))!important}.ps-md-settings{color:var(--s-text)!important}.ps-md-settings .ps-ico{color:var(--a)!important}.ps-top{bottom:calc(92px + env(safe-area-inset-bottom))!important}}
 .ps-md-settings:active{transform:scale(.94)}
 
 /* Portfolio typography: white text + the selected theme accent only. */
@@ -599,7 +599,7 @@ html{background:#070a14} /* no white flash while a page opens (login etc.) */
 .psb-menu{display:none!important}
 @media(min-width:651px){
   body.ps-hasbar{padding-bottom:104px!important}
-  .ps-mobile-dock{position:fixed;z-index:99980;left:50%;transform:translateX(-50%);width:min(540px,calc(100% - 32px));bottom:16px;min-height:66px;padding:7px 9px;display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;gap:3px;border:1px solid rgba(var(--a-rgb),.55);border-radius:25px;background:linear-gradient(145deg,rgba(19,23,38,.91),rgba(8,11,20,.94));box-shadow:0 10px 35px rgba(0,0,0,.4),0 0 24px rgba(var(--a-rgb),.10);-webkit-backdrop-filter:blur(22px) saturate(1.35);backdrop-filter:blur(22px) saturate(1.35)}
+  .ps-mobile-dock{position:fixed;z-index:99980;left:50%;transform:translateX(-50%);width:min(540px,calc(100% - 32px));bottom:16px;min-height:66px;padding:7px 9px;display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:3px;border:1px solid rgba(var(--a-rgb),.55);border-radius:25px;background:linear-gradient(145deg,rgba(19,23,38,.91),rgba(8,11,20,.94));box-shadow:0 10px 35px rgba(0,0,0,.4),0 0 24px rgba(var(--a-rgb),.10);-webkit-backdrop-filter:blur(22px) saturate(1.35);backdrop-filter:blur(22px) saturate(1.35)}
   .ps-md-item{min-width:0;height:52px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0!important;border-radius:15px!important;background:transparent!important;color:#aeb8cc!important;text-decoration:none!important;font:600 11px/1.1 var(--ps-font)!important;cursor:pointer;transition:background .2s,color .2s}
   .ps-md-item:hover{background:rgba(var(--a-rgb),.1)!important;color:var(--s-text,#fff)!important}
   .ps-md-item .ps-ico{width:20px;height:20px;color:currentColor}
@@ -628,6 +628,6 @@ html{background:#070a14} /* no white flash while a page opens (login etc.) */
   .ps-ai-fab-core .ps-ico{width:19px;height:19px}
 }
 
-/* v6.4: QR added to the bottom bar (6 items); the OFC / API / AI ... tabs in the PC top bar are removed */
+/* v6.5: the OFC / API / AI ... tabs are hidden in the top bar; time, coins, music, settings and account stay at the right, exactly where they were */
 .psb-tabs{display:none!important}
-@media(max-width:380px){.ps-md-item span{font-size:9.5px}}
+.psb-right{margin-left:auto!important}

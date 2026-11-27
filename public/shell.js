@@ -338,8 +338,7 @@
       { k: 'ofc', t: 'Home', p: '/', ic: 'home' },
       { k: 'api', t: 'API', p: '/api', ic: 'bolt' },
       { k: 'bot', t: 'WA Bot', p: '/bot', ic: 'bot' },
-      { k: 'qr', t: 'QR', p: '/qr', ic: 'qr' },
-      { k: 'papers', t: 'Papers', p: 'https://pastpaper-pro.vercel.app', ic: 'book' }
+      { k: 'qr', t: 'QR', p: '/qr', ic: 'qr' }
     ];
     dock.innerHTML = dockItems.map(function (it) {
       var l = link(it.p); if (!l) return '';
